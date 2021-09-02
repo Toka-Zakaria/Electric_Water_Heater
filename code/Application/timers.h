@@ -181,6 +181,7 @@ typedef struct
 {
 	uint32 timer_InitialValue;
 	uint32 timer_compare_MatchValue;
+	uint32 timer_Input_capture_value;
 	Timer_Type  timer_ID;
 	Timer_Clock timer_clock;
 	Timer_Mode  timer_mode;
@@ -227,3 +228,4 @@ void Timer_start(Timer_Type timer_type, Timer_Clock CLK);
 void Timer_DeInit(Timer_Type timer_type);
 
 #endif /* TIMERS_H_ */
+
