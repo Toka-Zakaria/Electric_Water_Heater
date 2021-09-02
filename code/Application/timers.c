@@ -448,6 +448,8 @@ void Timer_init(const Timer_ConfigType * Config_Ptr)
 					TIMER1_CONTROL_REGIRSTER_B =  SET_BIT(TIMER1_CONTROL_REGIRSTER_B, TIMER1_WAVE_FORM_GENERATION_BIT13);
 
 
+
+
 				switch((Config_Ptr->compare_register))
 				{
 
@@ -460,9 +462,9 @@ void Timer_init(const Timer_ConfigType * Config_Ptr)
 					OC1A_DIRECTION_PORT = SET_BIT(OC1A_DIRECTION_PORT, OC1A_PIN);
 
 					/*
-					 * Configure FOC1A bit in the TCCR1 register to be active
+					 * Configure FOC1A bit in the TCCR1 register to be low
 					 * As Timer1 is PWM
-					 * Make FOC1A to be Active as it is Fast PWM mode
+					 * Make FOC1A to be low as it is phase correct mode
 					 */
 					TIMER1_CONTROL_REGIRSTER_A =  CLEAR_BIT(TIMER1_CONTROL_REGIRSTER_A,TIMER1_FORCE_OUTPUT_COMPARE_BIT_A);
 
@@ -478,7 +480,13 @@ void Timer_init(const Timer_ConfigType * Config_Ptr)
 					 * Anding with 0XFFFF to make sure the value won't exceed
 					 * OXFFFF as it is 16-bit Timer
 					 */
-					INPUT_CAPTURE_REGISRTER1 = ((Config_Ptr->timer_compare_MatchValue)) & 0XFFFF;
+					INPUT_CAPTURE_REGISRTER1 = ((Config_Ptr->timer_Input_capture_value)) & 0XFFFF;
+					/*
+					 * Configure Compare match value for Timer1 to start count from it
+					 * Anding with 0XFFFF to make sure the value won't exceed
+					 * OXFFFF as it is 16-bit Timer
+					 */
+					TIMER1_OUTPUT_COMPARE_REGISTER_A = ((Config_Ptr->timer_compare_MatchValue)) & 0XFFFF;
 
 					break; /*End of channel A*/
 
@@ -490,9 +498,9 @@ void Timer_init(const Timer_ConfigType * Config_Ptr)
 					OC1B_DIRECTION_PORT = SET_BIT(OC1B_DIRECTION_PORT, OC1A_PIN);
 
 					/*
-					 * Configure FOC1A bit in the TCCR1 register to be active
+					 * Configure FOC1A bit in the TCCR1 register to be low
 					 * As Timer1 is PWM
-					 * Make FOC1A to be Active as it is Fast PWM mode
+					 * Make FOC1B to be Active as it is phase correct mode
 					 */
 					TIMER1_CONTROL_REGIRSTER_A =  CLEAR_BIT(TIMER1_CONTROL_REGIRSTER_A,TIMER1_FORCE_OUTPUT_COMPARE_BIT_B);
 
@@ -508,7 +516,16 @@ void Timer_init(const Timer_ConfigType * Config_Ptr)
 					 * Anding with 0XFFFF to make sure the value won't exceed
 					 * OXFFFF as it is 16-bit Timer
 					 */
-					INPUT_CAPTURE_REGISRTER1 = ((Config_Ptr->timer_compare_MatchValue)) & 0XFFFF;
+					INPUT_CAPTURE_REGISRTER1 = ((Config_Ptr->timer_Input_capture_value)) & 0XFFFF;
+
+					/*
+					 * Configure Compare match value for Timer1 to start count from it
+					 * Anding with 0XFFFF to make sure the value won't exceed
+					 * OXFFFF as it is 16-bit Timer
+					 * to make it count right put OCR1A  greater than the value in OCR1B by 1
+					 */
+					TIMER1_OUTPUT_COMPARE_REGISTER_A = (((Config_Ptr->timer_compare_MatchValue)) & 0XFFFF) + 1;
+					TIMER1_OUTPUT_COMPARE_REGISTER_B = ((Config_Ptr->timer_compare_MatchValue)) & 0XFFFF;
 
 					break; /*End of channel B*/
 
@@ -636,7 +653,7 @@ void Timer_init(const Timer_ConfigType * Config_Ptr)
 						OC1A_DIRECTION_PORT = SET_BIT(OC1A_DIRECTION_PORT, OC1A_PIN);
 
 						/*
-						 * Configure FOC1A bit in the TCCR1 register to be active
+						 * Configure FOC1A bit in the TCCR1 register to be low
 						 * As Timer1 is PWM
 						 * Make FOC1A to be Active as it is Fast PWM mode
 						 */
@@ -654,7 +671,14 @@ void Timer_init(const Timer_ConfigType * Config_Ptr)
 						 * Anding with 0XFFFF to make sure the value won't exceed
 						 * OXFFFF as it is 16-bit Timer
 						 */
-						INPUT_CAPTURE_REGISRTER1 = ((Config_Ptr->timer_compare_MatchValue)) & 0XFFFF;
+						INPUT_CAPTURE_REGISRTER1 = ((Config_Ptr->timer_Input_capture_value)) & 0XFFFF;
+						/*
+						 * Configure Compare match value for Timer1 to start count from it
+						 * Anding with 0XFFFF to make sure the value won't exceed
+						 * OXFFFF as it is 16-bit Timer
+						 */
+						TIMER1_OUTPUT_COMPARE_REGISTER_A = ((Config_Ptr->timer_compare_MatchValue)) & 0XFFFF;
+
 
 						break;
 
@@ -684,7 +708,16 @@ void Timer_init(const Timer_ConfigType * Config_Ptr)
 						 * Anding with 0XFFFF to make sure the value won't exceed
 						 * OXFFFF as it is 16-bit Timer
 						 */
-						INPUT_CAPTURE_REGISRTER1 = ((Config_Ptr->timer_compare_MatchValue)) & 0XFFFF;
+						INPUT_CAPTURE_REGISRTER1 = ((Config_Ptr->timer_Input_capture_value)) & 0XFFFF;
+
+						/*
+						 * Configure Compare match value for Timer1 to start count from it
+						 * Anding with 0XFFFF to make sure the value won't exceed
+						 * OXFFFF as it is 16-bit Timer
+						 * to make it count right put OCR1A  greater than the value in OCR1B by 1
+						 */
+						TIMER1_OUTPUT_COMPARE_REGISTER_A = (((Config_Ptr->timer_compare_MatchValue)) & 0XFFFF) + 1;
+						TIMER1_OUTPUT_COMPARE_REGISTER_B = ((Config_Ptr->timer_compare_MatchValue)) & 0XFFFF;
 
 						break;
 
