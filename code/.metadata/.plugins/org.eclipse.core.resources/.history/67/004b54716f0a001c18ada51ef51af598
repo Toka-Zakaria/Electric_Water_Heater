@@ -1,0 +1,87 @@
+/**********************************************************************************
+ * [FILE NAME]: motor_A.c
+ *
+ * [AUTHOR]: Toka Zakaria
+ *
+ * [DATE CREATED]: Nov 5, 2020
+ *
+ * [Description]: Functions will be used to work with DC motor.
+ *
+ ***********************************************************************************/
+
+#include"motor_A.h"
+
+
+void motorA_Init(void)
+{
+	MOTORA_DIRECTION_PORT = SET_BIT(MOTORA_DIRECTION_PORT , MOTORA_PIN_IN1);
+	MOTORA_DIRECTION_PORT = SET_BIT(MOTORA_DIRECTION_PORT , MOTORA_PIN_IN2);
+
+#if ENABLE_PIN_CONNECTED_TO_MICRO
+
+	MOTORA_ENABLE_DIRECTION_PORT = SET_BIT(MOTORA_ENABLE_DIRECTION_PORT , MOTORA_PIN_EN1);
+#endif
+}
+
+
+/***************************************************************************************************
+ * [Function Name]: motor_on_ClockWise
+ *
+ * [Description]:  Function to make the motor move on clockwise direction
+ *
+ * [Args]:         NONE
+ *
+ * [In]            NONE
+ *
+ * [Out]           NONE
+ *
+ * [Returns]:      NONE
+ ***************************************************************************************************/
+
+void motorA_on_ClockWise(void)
+{
+	MOTORA_DATA_PORT = CLEAR_BIT(MOTORA_DATA_PORT , MOTORA_PIN_IN1);
+	MOTORA_DATA_PORT = SET_BIT(MOTORA_DATA_PORT , MOTORA_PIN_IN2);
+
+}/*End of motor_onClockWise*/
+
+/***************************************************************************************************
+ * [Function Name]: motor_on_AntiClockWise
+ *
+ * [Description]:  Function to make the motor move on  Anti clockwise direction
+ *
+ * [Args]:         NONE
+ *
+ * [In]            NONE
+ *
+ * [Out]           NONE
+ *
+ * [Returns]:      NONE
+ ***************************************************************************************************/
+
+void motorA_onAnti_ClockWise(void)
+{
+	MOTORA_DATA_PORT = CLEAR_BIT( MOTORA_DATA_PORT, MOTORA_PIN_IN2);
+	MOTORA_DATA_PORT = SET_BIT (MOTORA_DATA_PORT, MOTORA_PIN_IN1);
+}/*End of motor_onClockWise*/
+
+/***************************************************************************************************
+ * [Function Name]: motor_on_ClockWise
+ *
+ * [Description]:  Function to make the motor stop moving.
+ *
+ * [Args]:         NONE
+ *
+ * [In]            NONE
+ *
+ * [Out]           NONE
+ *
+ * [Returns]:      NONE
+ ***************************************************************************************************/
+void motorA_on_Stop(void)
+{
+	MOTORA_DATA_PORT = CLEAR_BIT(MOTORA_DATA_PORT , MOTORA_PIN_IN2);
+	MOTORA_DATA_PORT = CLEAR_BIT( MOTORA_DATA_PORT, MOTORA_PIN_IN1);
+
+}/*End of motor_onClockWise*/
+/**************************************************************************************************/

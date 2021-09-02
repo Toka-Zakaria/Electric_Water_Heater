@@ -1,0 +1,82 @@
+/**********************************************************************************
+ * [FILE NAME]: motor.h
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Nov 5, 2020
+ *
+ * [Description]:File of All types Declaration and Functions prototypes of DC Motor.
+ ***********************************************************************************/
+
+#ifndef DCMOTOR_H_
+#define DCMOTOR_H_
+
+#include "std_types.h"
+#include "micro_config.h"
+#include "common_macros.h"
+
+
+/*******************************************************************************
+ *                      Preprocessor Macros                                    *
+ *******************************************************************************/
+
+#define MOTOR_DIRECTION_PORT                  DDRA
+#define MOTOR_PIN_IN1                          PA1
+#define MOTOR_PIN_IN2                          PA2
+#define MOTOR_PIN_EN1
+#define MOTOR_DATA_PORT                      PORTA
+#define MOTOR_PIN_IN3
+#define MOTOR_PIN_IN4
+#define MOTOR_PIN_EN2
+
+
+/*******************************************************************************
+ *                      Functions Prototypes                                   *
+ *******************************************************************************/
+
+
+/********************************************************************************
+ * [Function Name]: motor_on_ClockWise
+ *
+ * [Description]:  Function to make the motor move on clockwise direction
+ *
+ * [Args]:         NONE
+ *
+ * [In]            NONE
+ *
+ * [Out]           NONE
+ *
+ * [Returns]:      NONE
+ *******************************************************************************/
+void motor_on_ClockWise(void);
+/*********************************************************************************
+ * [Function Name]: motor_on_AntiClockWise
+ *
+ * [Description]:  Function to make the motor move on  Anti clockwise direction
+ *
+ * [Args]:         NONE
+ *
+ * [In]            NONE
+ *
+ * [Out]           NONE
+ *
+ * [Returns]:      NONE
+ *********************************************************************************/
+void motor_onAnti_ClockWise(void);
+/*********************************************************************************
+ * [Function Name]: motor_on_Stop
+ *
+ * [Description]:  Function to make the motor stop moving.
+ *
+ * [Args]:         NONE
+ *
+ * [In]            NONE
+ *
+ * [Out]           NONE
+ *
+ * [Returns]:      NONE
+ *********************************************************************************/
+void motor_on_Stop(void);
+
+
+#endif /* DCMOTOR_H_ */

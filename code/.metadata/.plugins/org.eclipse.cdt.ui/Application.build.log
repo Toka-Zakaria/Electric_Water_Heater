@@ -1,0 +1,47 @@
+04:21:27 **** Incremental Build of configuration Debug for project Application ****
+make all 
+Building file: ../application_functions.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega16 -DF_CPU=1000000UL -MMD -MP -MF"application_functions.d" -MT"application_functions.o" -c -o "application_functions.o" "../application_functions.c"
+In file included from ../micro_config.h:25,
+                 from ../application_functions.h:16,
+                 from ../application_functions.c:12:
+c:/winavr-20100110/lib/gcc/../../avr/include/util/delay.h:90:3: warning: #warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+Finished building: ../application_functions.c
+ 
+Building file: ../main.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega16 -DF_CPU=1000000UL -MMD -MP -MF"main.d" -MT"main.o" -c -o "main.o" "../main.c"
+In file included from ../micro_config.h:25,
+                 from ../application_functions.h:16,
+                 from ../main.c:11:
+c:/winavr-20100110/lib/gcc/../../avr/include/util/delay.h:90:3: warning: #warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+Finished building: ../main.c
+ 
+Building target: Application.elf
+Invoking: AVR C Linker
+avr-gcc -Wl,-Map,Application.map -mmcu=atmega16 -o "Application.elf"  ./DCmotor.o ./LEDs.o ./adc.o ./application_functions.o ./external_eeprom.o ./external_interrupts.o ./i2c.o ./main.o ./timers.o   
+Finished building target: Application.elf
+ 
+Invoking: AVR Create Extended Listing
+avr-objdump -h -S Application.elf  >"Application.lss"
+Finished building: Application.lss
+ 
+Invoking: Print Size
+avr-size --format=avr --mcu=atmega16 Application.elf
+AVR Memory Usage
+----------------
+Device: atmega16
+
+Program:   14854 bytes (90.7% Full)
+(.text + .data + .bootloader)
+
+Data:        300 bytes (29.3% Full)
+(.data + .bss + .noinit)
+
+
+Finished building: sizedummy
+ 
+
+04:21:28 Build Finished. 0 errors, 2 warnings. (took 1s.470ms)
+

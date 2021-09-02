@@ -1,0 +1,168 @@
+/*
+ * buttons.c
+ *
+ *  Created on: Aug 25, 2021
+ *      Author: Toka_Zakaria
+ */
+
+
+#include"buttons.h"
+
+
+void buttons_init(void)
+{
+	/*configure buttons as inputs pins*/
+	BUTTON1_DIRECTION_PORT = CLEAR_BIT(BUTTON1_DIRECTION_PORT, BUTTON1_PIN);
+	BUTTON2_DIRECTION_PORT = CLEAR_BIT(BUTTON3_DIRECTION_PORT, BUTTON2_PIN);
+	BUTTON3_DIRECTION_PORT = CLEAR_BIT(BUTTON3_DIRECTION_PORT, BUTTON3_PIN);
+
+#if INTERNAL_PULL_UP_RESISTOR
+
+	BUTTON1_DATA_PORT = SET_BIT(BUTTON1_DATA_PORT, BUTTON1_PIN );
+	BUTTON2_DATA_PORT = SET_BIT(BUTTON3_DATA_PORT, BUTTON3_PIN );
+	BUTTON3_DATA_PORT = SET_BIT(BUTTON3_DATA_PORT, BUTTON3_PIN );
+#endif
+}
+
+
+
+bool BUTTON_IS_PRESSED(button_IDs buttonNum)
+{
+
+	bool flag = FALSE;
+	uint8 force1Time[3]= {0};
+	switch (buttonNum)
+	{
+	case button_1:
+#if BUTTON1_PULL_UP_MODE
+
+		if(BIT_IS_CLEAR(BUTTON1_PIN_PORT, BUTTON1_PIN) )
+		{
+			_delay_ms(240);
+
+			if(BIT_IS_SET(BUTTON1_PIN_PORT, BUTTON1_PIN) )
+			{
+				if( force1Time[0] == 0)
+				{
+					force1Time[0] = 1;
+					flag = TRUE;
+				}
+			}
+		}
+		else
+		{
+			force1Time[0] = 0;
+		}
+
+#else
+		if(BIT_IS_SET(BUTTON1_PIN_PORT, BUTTON1_PIN) )
+		{
+			_delay_ms(50);
+
+			if(BIT_IS_SET(BUTTON1_PIN_PORT, BUTTON1_PIN) )
+			{
+				if( force1Time[0] == 0)
+				{
+					force1Time[0] = 1;
+					flag = TRUE;
+				}
+			}
+		}
+		else
+		{
+			force1Time[0] = 0;
+		}
+#endif
+		break;
+
+	case button_2:
+#if BUTTON2_PULL_UP_MODE
+
+		if(BIT_IS_CLEAR(BUTTON2_PIN_PORT, BUTTON2_PIN) )
+		{
+			_delay_ms(240);
+
+			if(BIT_IS_SET(BUTTON2_PIN_PORT, BUTTON2_PIN) )
+			{
+				if( force1Time[1] == 0)
+				{
+					force1Time[1] = 1;
+					flag = TRUE;
+				}
+			}
+		}
+		else
+		{
+			force1Time[1] = 0;
+		}
+
+#else
+		if(BIT_IS_SET(BUTTON2_PIN_PORT, BUTTON2_PIN) )
+		{
+			_delay_ms(50);
+
+			if(BIT_IS_SET(BUTTON2_PIN_PORT, BUTTON2_PIN) )
+			{
+				if( force1Time[1] == 0)
+				{
+					force1Time[1] = 1;
+					flag = TRUE;
+				}
+			}
+		}
+		else
+		{
+			force1Time[1] = 0;
+		}
+#endif
+		break;
+
+	case button_3:
+#if BUTTON1_PULL_UP_MODE
+
+		if(BIT_IS_CLEAR(BUTTON1_PIN_PORT, BUTTON1_PIN) )
+		{
+			_delay_ms(240);
+
+			if(BIT_IS_SET(BUTTON1_PIN_PORT, BUTTON1_PIN) )
+			{
+				if( force1Time[2] == 0)
+				{
+					force1Time[2] = 1;
+					flag = TRUE;
+				}
+			}
+		}
+		else
+		{
+			force1Time[2] = 0;
+		}
+
+#else
+		if(BIT_IS_SET(BUTTON3_PIN_PORT, BUTTON3_PIN) )
+		{
+			_delay_ms(50);
+
+			if(BIT_IS_SET(BUTTON3_PIN_PORT, BUTTON3_PIN) )
+			{
+				if( force1Time[2] == 0)
+				{
+					force1Time[2] = 1;
+					flag = TRUE;
+				}
+			}
+		}
+		else
+		{
+			force1Time[2] = 0;
+		}
+#endif
+		break;
+
+	default:
+		flag = FALSE;
+		break;
+	}
+
+	return flag;
+}

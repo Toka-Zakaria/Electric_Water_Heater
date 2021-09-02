@@ -1,0 +1,250 @@
+/**********************************************************************************
+ * [FILE NAME]: main.c
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]:
+ ***********************************************************************************/
+
+#include"application_functions.h"
+
+int main()
+{
+	/*******************************************************************************
+	 *                    Variable Declaration and Definitions                     *
+	 *******************************************************************************/
+
+	/*
+	 * local variable to check if the current press is On or off
+	 */
+	uint8 OnOff_ModeCheck = OFF_STATE;
+
+	/*******************************************************************************
+	 *                             Modules Initialization                          *
+	 *******************************************************************************/
+
+	SEGMENTS_DIRECTION_REG |=  SEGMENTS_MASK_TO_BE_OUTPUT;
+	/*
+	 * Configure Control selection lines of the segments as output pins
+	 */
+	SEGMENTS_CTRL_DIRECTION_REG |= SGMENTS_CTRL_MASK_TO_BE_OUTPUT;
+	/*
+	 * Disable Control selection lines of the segments at the beginning of the program to make segments off
+	 */
+	SEGMENTS_CTRL_PORT_REG &= SEGMENTS_CTRL_MASK;
+	/*
+	 * Set the first value on the segments by 0
+	 */
+	SEGMENTS_PORT_REG &=  SEGMENTS_MASK;
+	/*
+	 * Configure the pin of the temperature sensor  as input pin
+	 */
+	TEMP_SENSOR_DIRECTION_REG = SET_BIT(TEMP_SENSOR_DIRECTION_REG, TEMP_SENSOR_INPUT_PIN);
+
+	/**************************************************************************************/
+	/*
+	 * Initialize the External EEPROM to be ready to work
+	 */
+	EEPROM_init();
+	/*
+	 * Initialize Analog to Digital Converter to be ready to work
+	 */
+	ADC_init();
+	/*
+	 * Initialize DC motor to be ready to work
+	 */
+	DC_motor_Init();
+	/*
+	 * Initialize LEDs to be ready to work
+	 */
+	LEDs_Init();
+	/*
+	 * Initialize LEDs to be ready to work
+	 */
+	buttons_init();
+	/*
+	 * Enable Global Interrupt
+	 */
+	SREG = SET_BIT(SREG, I_BIT);
+
+	/*******************************************************************************
+	 *                             Initial Start mode                               *
+	 *******************************************************************************/
+	/*
+	 * stop the motor in the start of the program
+	 */
+	DC_motor_on_stop();
+	/*
+	 * Turn OFF cooling LED in the begin of the program
+	 */
+	LED_OFF(LED1);
+	/*
+	 * Turn OFF heating LED in the begin of the program
+	 */
+	LED_OFF(LED2);
+	/*******************************************************************************
+	 *                             Main Application                                *
+	 *******************************************************************************/
+	while(1)
+	{
+		/************************************************************************************************
+		 *                                          ON/OFF Button
+		 ************************************************************************************************/
+
+		if( BUTTON_IS_PRESSED(button_1) )
+		{
+			/*
+			 * to display 0 at when opening it first time at the click
+			 */
+			SEGMENTS_CTRL_PORT_REG |= 0X03;
+			SEGMENTS_PORT_REG &=  0XF0;
+			_delay_ms(1200);
+
+			/*
+			 * increment the variable which responsible for checking
+			 * if this current press on the on/off button express on mode or off mode
+			 */
+			OnOff_ModeCheck++;
+		}
+
+		/************************************************************************************************
+		 *                                          UP Button
+		 ************************************************************************************************/
+
+		if( BUTTON_IS_PRESSED(button_3) )
+		{
+
+
+		}
+		/************************************************************************************************
+		 *                                          down Button
+		 ************************************************************************************************/
+		if( BUTTON_IS_PRESSED(button_2) )
+		{
+
+
+		}
+
+		/************************************************************************************************
+		 *                             ON/OFF Button Handling ON mode & OFF mode
+		 ************************************************************************************************/
+
+				if( (OnOff_ModeCheck%2) == ON_STATE)
+				{
+					//ReadLastValue();
+					//displayTemperature(tempStored);
+					//disableSegments();
+					//_delay_ms(500);
+					//displayTemperature(tempStored);
+					//EEPROM_readByte(0X0100, &tempZeros);
+					//EEPROM_readByte(0X0101, &tempTens);
+					//tempStored = (tempTens*10) + tempZeros;
+
+					/************************************************************************************************
+					 *                              Temperature Setting in UP-Mode
+					 ************************************************************************************************/
+
+							displayTemperature(temp);
+							disableSegments();
+							_delay_ms(500);
+							displayTemperature(temp);
+
+
+					////////////////////////////////////////////////////////////
+					else if(downClick != 0)
+					{
+						if(g_tick != 5)
+						{
+							displayTemperature(temp);
+							disableSegments();
+							_delay_ms(500);
+							displayTemperature(temp);
+
+
+							/*if( (temperature - temp) == 5)
+							{
+								motor_on_ClockWise();
+							}*/
+						}
+						else
+						{
+							g_tick = 0;
+							downClick =0;
+							Timer_DeInit(Timer1);
+						}
+					}
+					/////////////////////////////////////////////////////////////
+					else
+					{
+						/*Store the final value of temp*/
+						//EEPROM_writeByte(0x0100, temp%10);
+						//EEPROM_writeByte(0x0101, temp/10);
+
+						/*
+						 * read current temperature of the water in the water heater
+						 */
+						currentTemperature = read_currentTemperature();
+						/*
+						 * display the temperature of the water heater on the segments
+						 */
+						SEGMENTS_CTRL_PORT_REG |= 0X03;
+						displayTemperature(currentTemperature);
+						SEGMENTS_CTRL_PORT_REG |= 0X03;
+
+
+						//////////////////////////////////////////////
+						//heating & cooling elements
+						if( (currentTemperature - temp) == 5)
+						{
+							DC_motor_on_ClockWise();
+							PORTD |= (1<<5);
+						}
+
+						else if( (temp-currentTemperature) == 5)
+						{
+
+							DC_motor_on_Stop();
+							PORTD &= ~(1<<5);
+
+							//turn on heating
+							PORTD |= (1<<6);
+							//PORTA |= (1<<PA3) |(1<<PA4);
+						}
+						else
+						{
+							DC_motor_on_Stop();
+							PORTD &= ~(1<<5);
+							PORTD &= ~(1<<6);
+						}
+					}
+					///////////////////////////////////////////////////
+				}/*End of ON state*/
+				else if( (OnOff_ModeCheck%2) == OFF_STATE )
+				{
+					/*
+					 * turn off the segments during the off state
+					 */
+					Timer_DeInit(Timer1);
+					downClick=0;
+					upClick = 0;
+					g_tick = 0;
+					disableSegments();
+
+					//EEPROM_readByte(0X0100, &tempZeros);
+					//EEPROM_readByte(0X0101, &tempTens);
+					//tempStored = (tempTens*10) + tempZeros;
+					//if(tempStored == 70)
+					//{
+					//PORTD |= (1<<5);
+					//PORTD |= (1<<6);
+					//}
+
+				}/*End of off State*/
+
+
+	}/*End of super loop*/
+
+	return 0;
+}/*end of main function*/

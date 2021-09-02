@@ -1,0 +1,31 @@
+/**********************************************************************************
+ * [FILE NAME]: LEDs.c
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]:
+ ***********************************************************************************/
+
+
+
+#include"LEDS.h"
+
+void Led_Init(void)
+{
+
+	/*
+	 * Configure the led pin as output pin
+	 */
+	LED_DIRECTION_PORT = SET_BIT(LED_DIRECTION_PORT, LED_OUTPUT_PIN);
+
+}/*end of Led_Init*/
+
+
+void LED_ON(void)
+{
+
+
+
+}/*end of Led_ON*/

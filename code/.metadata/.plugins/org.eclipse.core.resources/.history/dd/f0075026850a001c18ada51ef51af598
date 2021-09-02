@@ -1,0 +1,122 @@
+/**********************************************************************************
+ * [FILE NAME]: main.c
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]:
+ ***********************************************************************************/
+
+#include"application_functions.h"
+
+int main()
+{
+	/*******************************************************************************
+	 *                    Variable Declaration and Definitions                     *
+	 *******************************************************************************/
+
+	/*
+	 * local variable to check if the current press is On or off
+	 */
+	uint8 OnOff_ModeCheck = OFF_STATE;
+
+	/*******************************************************************************
+	 *                             Modules Initialization                          *
+	 *******************************************************************************/
+
+	SEGMENTS_DIRECTION_REG |=  SEGMENTS_MASK_TO_BE_OUTPUT;
+	/*
+	 * Configure Control selection lines of the segments as output pins
+	 */
+	SEGMENTS_CTRL_DIRECTION_REG |= SGMENTS_CTRL_MASK_TO_BE_OUTPUT;
+	/*
+	 * Disable Control selection lines of the segments at the beginning of the program to make segments off
+	 */
+	SEGMENTS_CTRL_PORT_REG &= SEGMENTS_CTRL_MASK;
+	/*
+	 * Set the first value on the segments by 0
+	 */
+	SEGMENTS_PORT_REG &=  SEGMENTS_MASK;
+	/*
+	 * Configure the pin of the temperature sensor  as input pin
+	 */
+	TEMP_SENSOR_DIRECTION_REG = SET_BIT(TEMP_SENSOR_DIRECTION_REG, TEMP_SENSOR_INPUT_PIN);
+
+	/**************************************************************************************/
+	/*
+	 * Initialize the External EEPROM to be ready to work
+	 */
+	EEPROM_init();
+	/*
+	 * Initialize Analog to Digital Converter to be ready to work
+	 */
+	ADC_init();
+	/*
+	 * Initialize DC motor to be ready to work
+	 */
+	DC_motor_Init();
+	/*
+	 * Initialize LEDs to be ready to work
+	 */
+	LEDs_Init();
+	/*
+	 * Initialize LEDs to be ready to work
+	 */
+	buttons_init();
+	/*
+	 * Enable Global Interrupt
+	 */
+	SREG = SET_BIT(SREG, I_BIT);
+
+	/*******************************************************************************
+	 *                             Initial Start mode                               *
+	 *******************************************************************************/
+	/*
+	 * stop the motor in the start of the program
+	 */
+	DC_motor_on_stop();
+	/*
+	 * Turn OFF cooling LED in the begin of the program
+	 */
+	LED_OFF(LED1);
+	/*
+	 * Turn OFF heating LED in the begin of the program
+	 */
+	LED_OFF(LED2);
+	/*******************************************************************************
+	 *                             Main Application                                *
+	 *******************************************************************************/
+	while(1)
+	{
+		/************************************************************************************************
+		 *                                          ON/OFF Button
+		 ************************************************************************************************/
+
+		if( BUTTON_IS_PRESSED(button_1) )
+		{
+			/*
+			 * to display 0 at when opening it first time at the click
+			 */
+			SEGMENTS_CTRL_PORT_REG |= 0X03;
+			SEGMENTS_PORT_REG &=  0XF0;
+			_delay_ms(1200);
+
+			/*
+			 * increment the variable which responsible for checking
+			 * if this current press on the on/off button express on mode or off mode
+			 */
+			OnOff_ModeCheck++;
+		}
+
+		/************************************************************************************************
+		 *                                          ON/OFF Button
+		 ************************************************************************************************/
+
+
+
+
+	}/*End of super loop*/
+
+	return 0;
+}/*end of main function*/

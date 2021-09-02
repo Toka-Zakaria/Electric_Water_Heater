@@ -1,0 +1,186 @@
+/**********************************************************************************
+ * [FILE NAME]: main.c
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]:
+ ***********************************************************************************/
+
+#include"application_functions.h"
+
+int main()
+{
+	/*******************************************************************************
+	 *                    Variable Declaration and Definitions                     *
+	 *******************************************************************************/
+
+
+	/*
+	 * local variable to check if the current press is On or off
+	 */
+	uint8 OnOff_ModeCheck = OFF_STATE;
+
+	uint32 temperature=0;
+
+
+
+
+	/*******************************************************************************
+	 *                             Modules Initialization                          *
+	 *******************************************************************************/
+//	/*
+//	 * Configure up button pin as input pin
+//	 */
+//	UP_BUTTON_DIRECTION_REG = CLEAR_BIT(UP_BUTTON_DIRECTION_REG, UP_BUTTON_INPUT_PIN);
+//	/*
+//	 * Configure down button as input pin
+//	 */
+//	DOWN_BUTTON_DIRECTION_REG = CLEAR_BIT(DOWN_BUTTON_DIRECTION_REG, DOWN_BUTTON_INPUT_PIN);
+//	/*
+//	 *Configure ON OFF button as input pin
+//	 */
+//	ON_OFF_BUTTON_DIRECTION_REG = CLEAR_BIT(ON_OFF_BUTTON_DIRECTION_REG, ON_OFF_BUTTON_INPUT_PIN);
+//	/*
+//	 *Configure cooling led as output led
+//	 */
+
+	/*
+	 * Enable PULL Up for UP Button
+	 */
+	UP_BUTTON_PORT_REG = SET_BIT(UP_BUTTON_PORT_REG, UP_BUTTON_INPUT_PIN);
+	/*
+	 * Enable PULL Up for Down Button
+	 */
+	DOWN_BUTTON_PORT_REG = SET_BIT(DOWN_BUTTON_PORT_REG, DOWN_BUTTON_INPUT_PIN);
+	/*
+	 * Enable PULL Up for ON/OFF Button
+	 */
+	ON_OFF_BUTTON_PORT_REG = SET_BIT(ON_OFF_BUTTON_PORT_REG, ON_OFF_BUTTON_INPUT_PIN);
+	/*
+	 *Configure motor pins as output pins
+	 */
+
+	SEGMENTS_DIRECTION_REG |=  SEGMENTS_MASK_TO_BE_OUTPUT;
+	/*
+	 * Configure Control selection lines of the segments as output pins
+	 */
+	SEGMENTS_CTRL_DIRECTION_REG |= SGMENTS_CTRL_MASK_TO_BE_OUTPUT;
+	/*
+	 * Disable Control selection lines of the segments at the beginning of the program to make segments off
+	 */
+	SEGMENTS_CTRL_PORT_REG &= SEGMENTS_CTRL_MASK;
+	/*
+	 * Set the first value on the segments by 0
+	 */
+	SEGMENTS_PORT_REG &=  SEGMENTS_MASK;
+	/*
+	 * Configure the pin of the temperature sensor  as input pin
+	 */
+	TEMP_SENSOR_DIRECTION_REG = SET_BIT(TEMP_SENSOR_DIRECTION_REG, TEMP_SENSOR_INPUT_PIN);
+
+	/**************************************************************************************/
+	/*
+	 * Initialize the External EEPROM to be ready to work
+	 */
+	EEPROM_init();
+	/*
+	 * Initialize Analog to Digital Converter to be ready to work
+	 */
+	ADC_init();
+	/*
+	 * Initialize DC motor to be ready to work
+	 */
+	DC_motor_Init();
+	/*
+	 * Initialize LEDs to be ready to work
+	 */
+	LED_Init();
+	/*
+	 * Initialize LEDs to be ready to work
+	 */
+	buttons_Init();
+	/*
+	 * Enable Global Interrupt
+	 */
+	SREG = SET_BIT(SREG, I_BIT);
+
+	/*******************************************************************************
+	 *                             Initial Start mode                               *
+	 *******************************************************************************/
+	/*
+	 * stop the motor in the start of the program
+	 */
+	DC_motor_on_Stop();
+	/*
+	 * Turn OFF cooling LED in the begin of the program
+	 */
+	LED_OFF(LED1);
+	/*
+	 * Turn OFF heating LED in the begin of the program
+	 */
+	LED_OFF(LED2);
+	/*******************************************************************************
+	 *                             Main Application                                *
+	 *******************************************************************************/
+	while(1)
+	{
+		/************************************************************************************************
+		 *                                          ON/OFF Button
+		 ************************************************************************************************/
+
+				if(  BIT_IS_CLEAR(ON_OFF_BUTTON_PIN_REG , ON_OFF_BUTTON_INPUT_PIN)  )
+				{
+					/*
+					 * wait some seconds due to bouncing of the button
+					 */
+					_delay_ms(240);
+					/*
+					 * Ask again to make sure it is a real push on the button
+					 */
+					if(  BIT_IS_CLEAR(ON_OFF_BUTTON_PIN_REG , ON_OFF_BUTTON_INPUT_PIN)  )
+					{
+						/*
+						 * Ask about the SW flag of ON/OFF button to make sure it will do
+						 *the functionality one time only
+						 */
+						if(OnOFF_swFlag == FALSE_STATE)
+						{
+							/*
+							 * to display 0 at when opening it first time at the click
+							 */
+							SEGMENTS_CTRL_PORT_REG |= 0X03;
+							SEGMENTS_PORT_REG &=  0XF0;
+							_delay_ms(1200);
+							/*
+							 * Change the state of the ON/OFF button to prevent the program
+							 * to enter this area of condition to avoid multiple of this action
+							 * during continuous press
+							 */
+							OnOFF_swFlag = TRUE_STATE;
+							/*
+							 * increment the variable which responsible for checking
+							 * if this current press on the on/off button express on mode or off mode
+							 */
+							OnOff_ModeCheck++;
+						}
+					}
+				}
+				else
+				{
+					/*
+					 * Change the state of the ON/OFF button to enable the program
+					 * to enter the area of condition once again after releasing the button
+					 */
+					OnOFF_swFlag = FALSE_STATE;
+				}
+
+
+
+
+
+	}/*End of super loop*/
+
+	return 0;
+}/*end of main function*/

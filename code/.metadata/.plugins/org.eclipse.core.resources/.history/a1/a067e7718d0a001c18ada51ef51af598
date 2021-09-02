@@ -1,0 +1,57 @@
+/*
+ * buttons.h
+ *
+ *  Created on: Aug 25, 2021
+ *      Author: Toka_Zakaria
+ */
+
+#ifndef BUTTONS_H_
+#define BUTTONS_H_
+
+#include "std_types.h"
+#include "micro_config.h"
+#include "common_macros.h"
+
+#define ENABLE                    TRUE
+#define DISABLE                   FALSE
+
+#define PRESSED                     TRUE
+#define NOT_PRESSED                 FALSE
+
+#define DEBOUNCE_TIME               240
+
+#define INTERNAL_PULL_UP_RESISTOR       ENABLE
+#define BUTTON1_PULL_UP_MODE            ENABLE
+#define BUTTON2_PULL_UP_MODE            ENABLE
+#define BUTTON3_PULL_UP_MODE            ENABLE
+
+#define BUTTON1_DIRECTION_PORT   DDRD   //ON-off
+#define BUTTON1_DATA_PORT        PORTD
+#define BUTTON1_PIN_PORT         PIND
+#define BUTTON1_PIN              PD4
+
+#define BUTTON2_DIRECTION_PORT   DDRD  //down
+#define BUTTON2_DATA_PORT        PORTD
+#define BUTTON2_PIN_PORT         PIND
+#define BUTTON2_PIN              PD3
+
+#define BUTTON3_DIRECTION_PORT    DDRD   //up
+#define BUTTON3_DATA_PORT         PORTD
+#define BUTTON3_PIN_PORT          PIND
+#define BUTTON3_PIN               PD2
+
+typedef enum
+{
+button_1=1, button_2, button_3,
+}button_IDs;
+
+void buttons_init(void);
+//uint8 BUTTON_IS_PRESSED(button_IDs buttonNum);
+
+bool DOWN_IS_PRESSED(void);
+bool ON_OFF_IS_PRESSED(void);
+bool UP_IS_PRESSED(void);
+
+
+
+#endif /* BUTTONS_H_ */

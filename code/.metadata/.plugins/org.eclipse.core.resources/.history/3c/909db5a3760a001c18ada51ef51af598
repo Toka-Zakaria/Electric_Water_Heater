@@ -1,0 +1,50 @@
+/**********************************************************************************
+ * [FILE NAME]: LEDs.c
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]:
+ ***********************************************************************************/
+
+#ifndef LEDS_H_
+#define LEDS_H_
+
+#include "std_types.h"
+#include "micro_config.h"
+#include "common_macros.h"
+
+#define NUMBER_OF_LEDS              2
+
+
+#if NUMBER_OF_LEDS == 1
+#define LED1_DIRECTION_PORT         DDRA
+#define LED1_DATA_PORT              PORTA
+#define LED1_PIN_PORT               PINA
+#define LED1_OUTPUT_PIN              PA0
+
+#elif NUMBER_OF_LEDS == 2
+#define LED1_DIRECTION_PORT         DDRA
+#define LED1_DATA_PORT              PORTA
+#define LED1_PIN_PORT               PINA
+#define LED1_OUTPUT_PIN              PA0
+
+#define LED1_DIRECTION_PORT         DDRA
+#define LED1_DATA_PORT              PORTA
+#define LED1_PIN_PORT               PINA
+#define LED1_OUTPUT_PIN              PA0s
+
+#endif
+
+
+#define POSITIVE                    1
+#define NEGATIVE                    2
+
+#define LED_LOGIC                POSITIVE
+
+
+
+
+
+#endif /* LEDS_H_ */

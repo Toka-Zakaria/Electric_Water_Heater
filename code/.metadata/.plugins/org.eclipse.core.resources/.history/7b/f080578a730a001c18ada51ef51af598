@@ -1,0 +1,46 @@
+/**********************************************************************************
+ * [FILE NAME]: LEDs.c
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]:
+ ***********************************************************************************/
+
+#ifndef LEDS_H_
+#define LEDS_H_
+
+#include "std_types.h"
+#include "micro_config.h"
+#include "common_macros.h"
+
+#define LED1_DIRECTION_PORT
+#define LED1_DATA_PORT
+#define LED1_PIN_PORT
+#define LED1_OUTPUT_PIN
+
+#define LED2_DIRECTION_PORT
+#define LED2_DATA_PORT
+#define LED2_PIN_PORT
+#define LED2_OUTPUT_PIN
+
+
+#define LED3_DIRECTION_PORT
+#define LED3_DATA_PORT
+#define LED3_PIN_PORT
+#define LED3_OUTPUT_PIN
+
+#define LED4_DIRECTION_PORT
+#define LED4_DATA_PORT
+#define LED4_PIN_PORT
+#define LED4_OUTPUT_PIN
+
+
+typedef struct
+{
+	uint16 Leds_number;
+}LEDs;
+
+
+#endif /* LEDS_H_ */

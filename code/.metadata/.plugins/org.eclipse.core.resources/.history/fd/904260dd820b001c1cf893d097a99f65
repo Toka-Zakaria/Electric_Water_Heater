@@ -1,0 +1,252 @@
+/**********************************************************************************
+ * [FILE NAME]: application_functions.c
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]: Functions will be used in the Applications in control ECU.
+ *
+ ***********************************************************************************/
+
+#include"application_functions.h"
+
+
+
+/************************************************************************************************
+ *                                    Application_Functions
+ ************************************************************************************************/
+
+
+/************************************************************************************************
+ *
+ ************************************************************************************************/
+
+/***************************************************************************************************
+ * [Function Name]:
+ *
+ * [Description]:
+ *
+ * [Args]:
+ *
+ * [In]
+ *
+ * [Out]
+ *
+ * [Returns]:
+ ***************************************************************************************************/
+
+uint32 read_currentTemperature(void)
+{
+	uint32 temp;
+
+	/*
+	 * Read channel two where the temperature sensor is connect
+	 * the current value of the water temperature
+	 */
+	temp = ADC_readChannel(0);
+	/*
+	 * Calculate the temperature from the ADC value
+	 */
+	temp = (uint32)((temp*150*5)/(1023*1.5));
+
+	return temp;
+
+}/*end of read temperature function*/
+
+
+/***************************************************************************************************
+ * [Function Name]:
+ *
+ * [Description]:
+ *
+ * [Args]:
+ *
+ * [In]
+ *
+ * [Out]
+ *
+ * [Returns]:
+ ***************************************************************************************************/
+
+void displayTemperature(uint32 currentTemp)
+{
+	/*
+	 * Enable Control selection lines of the segments
+	 */
+	//SEGMENTS_CTRL_PORT_REG |= 0X03;
+
+	SEGMENTS_CTRL_PORT_REG = (SEGMENTS_CTRL_PORT_REG & 0XFC) | 0X01;
+	SEGMENTS_PORT_REG =   (SEGMENTS_PORT_REG & 0XF0) | (((uint32)(currentTemp))%10);
+	_delay_ms(12);
+
+	SEGMENTS_CTRL_PORT_REG = (SEGMENTS_CTRL_PORT_REG & 0XFC) | 0X02;
+	SEGMENTS_PORT_REG =   (SEGMENTS_PORT_REG & 0XF0) | (((uint32)(currentTemp))/10);
+	_delay_ms(12);
+	//SEGMENTS_CTRL_PORT_REG |= 0X03;
+
+}/*End of display temperature function*/
+
+/***************************************************************************************************
+ * [Function Name]:
+ *
+ * [Description]:
+ *
+ * [Args]:
+ *
+ * [In]
+ *
+ * [Out]
+ *
+ * [Returns]:
+ ***************************************************************************************************/
+
+void disableSegments(void)
+{
+	SEGMENTS_CTRL_PORT_REG &= 0XFC;
+}
+
+/***************************************************************************************************
+ * [Function Name]:
+ *
+ * [Description]:
+ *
+ * [Args]:
+ *
+ * [In]
+ *
+ * [Out]
+ *
+ * [Returns]:
+ ***************************************************************************************************/
+
+void FlashingSegments(uint32 temperature)
+{
+	displayTemperature(temperature);
+	disableSegments();
+	_delay_ms(500);
+	displayTemperature(temperature);
+}
+/***************************************************************************************************
+ * [Function Name]:
+ *
+ * [Description]:
+ *
+ * [Args]:
+ *
+ * [In]
+ *
+ * [Out]
+ *
+ * [Returns]:
+ ***************************************************************************************************/
+void upFunc(void)
+{
+
+	g_upInterrupt_SWflag= 1;
+
+	if(g_firstClick == 0)
+	{
+		g_firstClick = 1;
+	}
+	else
+	{
+
+		g_setTemprature = g_setTemprature + INCREASE_VALUE;
+
+		if(g_setTemprature > MAXIMUM_SET_TEMPERATURE)
+		{
+			g_setTemprature = INITIAL_SET_TEMPERATURE;
+		}
+
+	}
+
+}
+/***************************************************************************************************
+ * [Function Name]:
+ *
+ * [Description]:
+ *
+ * [Args]:
+ *
+ * [In]
+ *
+ * [Out]
+ *
+ * [Returns]:
+ ***************************************************************************************************/
+void downFunc(void)
+{
+	g_downInterrupt_SWflag = 1;
+
+	/*
+	 * return g_tick to its initial value be ready to
+	 * count another MAXIMUM_NUMBER_OF_SECONDS
+	 */
+	g_tick = INITIAL_VALUE;
+
+	if(g_firstClick == 0)
+	{
+
+		g_firstClick = 1;
+
+	}
+	else
+	{
+
+		g_setTemprature = g_setTemprature - DECREASE_VALUE;
+
+		if(g_setTemprature < MINIMUM_SET_TEMPERATURE)
+		{
+			g_setTemprature = INITIAL_SET_TEMPERATURE;
+		}
+
+
+	}
+
+
+}
+/***************************************************************************************************
+ * [Function Name]:
+ *
+ * [Description]:
+ *
+ * [Args]:
+ *
+ * [In]
+ *
+ * [Out]
+ *
+ * [Returns]:
+ ***************************************************************************************************/
+
+void flashingTime(void)
+{
+
+	g_tick++;
+
+}
+
+/***************************************************************************************************
+ * [Function Name]:
+ *
+ * [Description]:
+ *
+ * [Args]:
+ *
+ * [In]
+ *
+ * [Out]
+ *
+ * [Returns]:
+ ***************************************************************************************************/
+void store_inMemory(uint32 temperature)
+{
+
+	EEPROM_writeByte(FIRST_ADDRESS_TO_STORE, temperature%10);
+	_delay_ms(EEPROM_WRITE_DELAY_VALUE);
+	EEPROM_writeByte(SECOND_ADDRESS_TO_STORE, temperature/10);
+	_delay_ms(EEPROM_WRITE_DELAY_VALUE);
+
+}
+

@@ -1,0 +1,89 @@
+/**********************************************************************************
+ * [FILE NAME]: motor_A.h
+ *
+ * [AUTHOR]: Toka Zakaria
+ *
+ * [DATE CREATED]: Nov 5, 2020
+ *
+ * [Description]:File of All types Declaration and Functions prototypes of DC Motor.
+ ***********************************************************************************/
+
+#ifndef MOTOR_A_H_
+#define MOTOR_A_H_
+
+#include "types.h"
+#include "micro.h"
+#include "common_macros.h"
+
+
+/*******************************************************************************
+ *                      Preprocessor Macros                                    *
+ *******************************************************************************/
+
+#define ENABLE                                  1
+#define DISABLE                                 0
+#define ENABLE_PIN_CONNECTED_TO_MICRO          DISABLE
+
+#define MOTORA_DIRECTION_PORT                  DDRC
+#define MOTORA_DATA_PORT                       PORTC
+#define MOTORA_PIN_IN1                          PC0
+#define MOTORA_PIN_IN2                          PC1
+
+
+#define MOTORA_ENABLE_DIRECTION_PORT           DDRB
+#define MOTORA_ENABLE_DATA_PORT                PORTB
+
+#define MOTORA_PIN_EN1                          PB3
+
+
+
+/*******************************************************************************
+ *                      Functions Prototypes                                   *
+ *******************************************************************************/
+void motorA_Init(void);
+
+/********************************************************************************
+ * [Function Name]: motor_on_ClockWise
+ *
+ * [Description]:  Function to make the motor move on clockwise direction
+ *
+ * [Args]:         NONE
+ *
+ * [In]            NONE
+ *
+ * [Out]           NONE
+ *
+ * [Returns]:      NONE
+ *******************************************************************************/
+void motorA_on_ClockWise(void);
+/*********************************************************************************
+ * [Function Name]: motor_on_AntiClockWise
+ *
+ * [Description]:  Function to make the motor move on  Anti clockwise direction
+ *
+ * [Args]:         NONE
+ *
+ * [In]            NONE
+ *
+ * [Out]           NONE
+ *
+ * [Returns]:      NONE
+ *********************************************************************************/
+void motorA_onAnti_ClockWise(void);
+/*********************************************************************************
+ * [Function Name]: motor_on_Stop
+ *
+ * [Description]:  Function to make the motor stop moving.
+ *
+ * [Args]:         NONE
+ *
+ * [In]            NONE
+ *
+ * [Out]           NONE
+ *
+ * [Returns]:      NONE
+ *********************************************************************************/
+void motorA_on_Stop(void);
+
+
+#endif /* MOTOR_A_H_ */

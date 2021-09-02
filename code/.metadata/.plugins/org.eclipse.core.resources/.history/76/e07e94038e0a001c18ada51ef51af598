@@ -1,0 +1,172 @@
+/*
+ * buttons.c
+ *
+ *  Created on: Aug 25, 2021
+ *      Author: Toka_Zakaria
+ */
+
+
+#include"buttons.h"
+
+
+void buttons_init(void)
+{
+	/*configure buttons as inputs pins*/
+	BUTTON1_DIRECTION_PORT = CLEAR_BIT(BUTTON1_DIRECTION_PORT, BUTTON1_PIN);
+	BUTTON2_DIRECTION_PORT = CLEAR_BIT(BUTTON3_DIRECTION_PORT, BUTTON2_PIN);
+	BUTTON3_DIRECTION_PORT = CLEAR_BIT(BUTTON3_DIRECTION_PORT, BUTTON3_PIN);
+
+#if INTERNAL_PULL_UP_RESISTOR
+
+	BUTTON1_DATA_PORT = SET_BIT(BUTTON1_DATA_PORT, BUTTON1_PIN );
+	BUTTON2_DATA_PORT = SET_BIT(BUTTON3_DATA_PORT, BUTTON3_PIN );
+	BUTTON3_DATA_PORT = SET_BIT(BUTTON3_DATA_PORT, BUTTON3_PIN );
+#endif
+}
+
+
+
+bool ON_OFF_IS_PRESSED(void)
+{
+
+	bool flag;
+#if BUTTON1_PULL_UP_MODE
+
+	if(BIT_IS_CLEAR(BUTTON1_PIN_PORT, BUTTON1_PIN) )
+	{
+		_delay_ms(DEBOUNCE_TIME);
+
+		if(BIT_IS_CLEAR(BUTTON1_PIN_PORT, BUTTON1_PIN) )
+		{
+			flag = PRESSED;
+		}
+		else
+		{
+			flag = NOT_PRESSED;
+		}
+
+	}
+#else
+	if(BIT_IS_SET(BUTTON1_PIN_PORT, BUTTON1_PIN) )
+	{
+		_delay_ms(DEBOUNCE_TIME);
+
+		if(BIT_IS_SET(BUTTON1_PIN_PORT, BUTTON1_PIN) )
+		{
+			flag = PRESSED;
+		}
+		else
+		{
+			flag = NOT_PRESSED;
+		}
+
+	}
+#endif
+
+	return flag;
+}
+
+
+
+bool DOWN_IS_PRESSED(void)
+{
+
+	bool flag;
+	bool once = TRUE;
+#if BUTTON2_PULL_UP_MODE
+
+	if(BIT_IS_CLEAR(BUTTON2_PIN_PORT, BUTTON2_PIN) )
+	{
+		_delay_ms(DEBOUNCE_TIME);
+
+		if(BIT_IS_CLEAR(BUTTON2_PIN_PORT, BUTTON2_PIN) )
+		{
+			if(once == TRUE)
+			{
+				once = FALSE;
+				flag = PRESSED;
+
+			}
+
+		}
+		else
+		{
+			once = TRUE;
+			flag = NOT_PRESSED;
+		}
+
+	}
+#else
+	if(BIT_IS_SET(BUTTON2_PIN_PORT, BUTTON2_PIN) )
+	{
+		_delay_ms(DEBOUNCE_TIME);
+
+		if(BIT_IS_SET(BUTTON2_PIN_PORT, BUTTON2_PIN) )
+		{
+			flag = PRESSED;
+		}
+		else
+		{
+			flag = NOT_PRESSED;
+		}
+
+	}
+#endif
+
+	return flag;
+}
+
+
+
+
+bool UP_IS_PRESSED(void)
+{
+
+	bool flag;
+
+#if BUTTON3_PULL_UP_MODE
+
+	if(BIT_IS_CLEAR(BUTTON3_PIN_PORT, BUTTON3_PIN) )
+	{
+		_delay_ms(DEBOUNCE_TIME);
+
+		if(BIT_IS_CLEAR(BUTTON3_PIN_PORT, BUTTON3_PIN) )
+		{
+			flag = PRESSED;
+		}
+		else
+		{
+			flag = NOT_PRESSED;
+		}
+
+	}
+#else
+	if(BIT_IS_SET(BUTTON3_PIN_PORT, BUTTON3_PIN) )
+	{
+		_delay_ms(DEBOUNCE_TIME);
+
+		if(BIT_IS_SET(BUTTON3_PIN_PORT, BUTTON3_PIN) )
+		{
+			flag = PRESSED;
+		}
+		else
+		{
+			flag = NOT_PRESSED;
+		}
+
+	}
+#endif
+
+	return flag;
+}
+
+
+
+
+
+
+
+
+
+
+

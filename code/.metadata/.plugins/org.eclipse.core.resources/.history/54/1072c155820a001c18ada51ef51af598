@@ -1,0 +1,516 @@
+///**********************************************************************************
+// * [FILE NAME]: main.c
+// *
+// * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+// *
+// * [DATE CREATED]: Jul 27, 2021
+// *
+// * [Description]:
+// ***********************************************************************************/
+//
+//#include"application_functions.h"
+//
+//uint8 g_tick=0;
+//uint8 upCount=0;
+//uint8 downCount = 0;
+//uint32 temp=0;
+//uint8 tempZeros=0;
+//uint8 tempTens=0;
+//uint32 tempStored=0;
+////uint8 g_exit=0;
+//Timer_ConfigType time = {0,/*8000*/7813, Timer1, F_CPU_1024, Compare, ChannelA};
+//
+//void ReadLastValue(void)
+//{
+//
+//	/*
+//	 * read the value from the eeprom
+//	 */
+//	EEPROM_readByte(0X0100, &tempZeros);
+//	EEPROM_readByte(0X0101, &tempTens);
+//	tempStored = (tempTens*10) + tempZeros;
+//
+//	if(tempStored != 0)
+//	{
+//		Timer_setCallBack(Exit_up_down_mode, Timer1);
+//		Timer_init(&time);
+//
+//		while (g_tick != 5)
+//		{
+//			SEGMENTS_CTRL_PORT_REG |= 0X03;
+//
+//			displayTemperature(tempStored);
+//			SEGMENTS_CTRL_PORT_REG |= 0X03;
+//
+//			disableSegments();
+//			_delay_ms(500);
+//			SEGMENTS_CTRL_PORT_REG |= 0X03;
+//			displayTemperature(tempStored);
+//			SEGMENTS_CTRL_PORT_REG |= 0X03;
+//		}
+//		g_tick = 0;
+//		tempStored = 0;
+//	}
+//}
+//
+//
+//ISR(INT0_vect)
+//{
+//	Timer_DeInit(Timer1);
+//	g_tick = 0;
+//	upCount++;
+//	if ((upCount == 1) && (downCount == 0))
+//	{
+//		temp = 60;
+//
+//
+//	}
+//	else
+//	{
+//		temp = temp + 5;
+//
+//		if (temp > 75)
+//		{
+//			temp = 75;
+//
+//			//upCount =0 ;
+//		}
+//	}
+//
+//	//EEPROM_writeByte(0x0100, (temp-5)%10);
+//	//EEPROM_writeByte(0x0101, (temp-5)/10);
+//}
+///****************************************************************************/
+//ISR(INT1_vect)
+//{
+//	Timer_DeInit(Timer1);
+//	g_tick = 0;
+//	downCount++;
+//	if ( (downCount == 1) && (upCount == 0))
+//	{
+//		temp = 60;
+//		//EEPROM_writeByte(0x0100, (temp+5)%10);
+//		//EEPROM_writeByte(0x0101, (temp+5)/10);
+//	}
+//	else
+//	{
+//		temp = temp - 5;
+//		if (temp < 35)
+//		{
+//			temp = 35;
+//			//EEPROM_writeByte(0x0100, (temp+5)%10);
+//			//EEPROM_writeByte(0x0101, (temp+5)/10);
+//			//downCount =0 ;
+//		}
+//	}
+//}
+///***************************************************************************/
+//
+//void INT1_Init(void)
+//{
+//	// Trigger INT1 with the raising edge
+//	MCUCR &= ~(1<<ISC10);
+//	MCUCR |= (1<<ISC11);
+//
+//	// Enable external interrupt pin INT1
+//	GICR  |= (1<<INT1);
+//}
+//
+//
+//// External INT0 enable and configuration function
+//void INT0_Init(void)
+//{
+//	// Enable external interrupt pin INT0
+//	GICR  |= (1<<INT0);
+//	// Trigger INT0 with the falling edge
+//	MCUCR &= ~(1<<ISC00);
+//	MCUCR |= (1<<ISC01);
+//}
+//
+//int main()
+//{
+//	/************************************************************************************************
+//	 *                                     Initialization
+//	 ************************************************************************************************/
+//	/*
+//	 * local variable to use it to check if there is a click or not in the
+//	 */
+//	uint8 upClick = 0;
+//	uint8 downClick =0;
+//	/*
+//	 * Enable I-bit in SREG register
+//	 */
+//	SREG = SET_BIT(SREG, I_BIT);
+//	/*
+//	 * a local variable to store the value captured from temperature sensor
+//	 */
+//	uint32 currentTemperature = 0;
+//	/*
+//	 * local variable to check if the current press is On or off
+//	 */
+//	uint8 OnOff_ModeCheck = OFF_STATE;
+//	/*
+//	 * local variable to use it with on/off button to make sure that the
+//	 * functionality is done one time while pressing the button
+//	 */
+//	uint8 OnOFF_swFlag = FALSE_STATE;
+//	/*
+//	 * local variable to use it with Up button to make sure that the
+//	 * functionality is done one time while pressing the button
+//	 */
+//	uint8 Up_swFlag = FALSE_STATE;
+//	/*
+//	 * local variable to use it with Down button to make sure that the
+//	 * functionality is done one time while pressing the button
+//	 */
+//	uint8 Down_swFlag = FALSE_STATE;
+//	/*
+//	 * Initialize the External EEPROM to be ready to work
+//	 */
+//	EEPROM_init();
+//	/*
+//	 * Initialize Analog to Digital Converter to be ready to work
+//	 */
+//	ADC_init();
+//	/*
+//	 * Configure up button pin as input pin
+//	 */
+//	UP_BUTTON_DIRECTION_REG = CLEAR_BIT(UP_BUTTON_DIRECTION_REG, UP_BUTTON_INPUT_PIN);
+//	/*
+//	 * Configure down button as input pin
+//	 */
+//	DOWN_BUTTON_DIRECTION_REG = CLEAR_BIT(DOWN_BUTTON_DIRECTION_REG, DOWN_BUTTON_INPUT_PIN);
+//	/*
+//	 *Configure ON OFF button as input pin
+//	 */
+//	ON_OFF_BUTTON_DIRECTION_REG = CLEAR_BIT(ON_OFF_BUTTON_DIRECTION_REG, ON_OFF_BUTTON_INPUT_PIN);
+//	/*
+//	 *Configure cooling led as output led
+//	 */
+//	COOLING_LED_DIRECTION_REG = SET_BIT(COOLING_LED_DIRECTION_REG, COOLING_LED_OUTPUT_PIN);
+//	/*
+//	 * Turn off cooling led in the beginning of the program
+//	 */
+//	COOLING_LED_PORT_REG = CLEAR_BIT(COOLING_LED_PORT_REG, COOLING_LED_OUTPUT_PIN);
+//	/*
+//	 *Configure heating led as input pin
+//	 */
+//	HEATING_LED_DIRECTION_REG = SET_BIT(HEATING_LED_DIRECTION_REG, HEATING_LED_OUTPUT_PIN);
+//	/*
+//	 * Turn off HEATING led in the beginning of the program
+//	 */
+//	HEATING_LED_PORT_REG = CLEAR_BIT(HEATING_LED_PORT_REG, HEATING_LED_OUTPUT_PIN);
+//	/*
+//	 *Configure 7-segments pins as output pins
+//	 */
+//	SEGMENTS_DIRECTION_REG |=  SEGMENTS_MASK_TO_BE_OUTPUT;
+//	/*
+//	 * Configure Control selection lines of the segments as output pins
+//	 */
+//	SEGMENTS_CTRL_DIRECTION_REG |= SGMENTS_CTRL_MASK_TO_BE_OUTPUT;
+//	/*
+//	 * Disable Control selection lines of the segments at the beginning of the program to make segments off
+//	 */
+//	SEGMENTS_CTRL_PORT_REG &= SEGMENTS_CTRL_MASK;
+//	/*
+//	 * Set the first value on the segments by 0
+//	 */
+//	SEGMENTS_PORT_REG &=  SEGMENTS_MASK;
+//	/*
+//	 * Configure the pin of the temperature sensor  as input pin
+//	 */
+//	TEMP_SENSOR_DIRECTION_REG = SET_BIT(TEMP_SENSOR_DIRECTION_REG, TEMP_SENSOR_INPUT_PIN);
+//	/*
+//	 * Enable PULL Up for UP Button
+//	 */
+//	UP_BUTTON_PORT_REG = SET_BIT(UP_BUTTON_PORT_REG, UP_BUTTON_INPUT_PIN);
+//	/*
+//	 * Enable PULL Up for Down Button
+//	 */
+//	DOWN_BUTTON_PORT_REG = SET_BIT(DOWN_BUTTON_PORT_REG, DOWN_BUTTON_INPUT_PIN);
+//	/*
+//	 * Enable PULL Up for ON/OFF Button
+//	 */
+//	ON_OFF_BUTTON_PORT_REG = SET_BIT(ON_OFF_BUTTON_PORT_REG, ON_OFF_BUTTON_INPUT_PIN);
+//
+//	/*
+//	 *Configure motor to be in stop mode in the first of the program
+//	 */
+//	DC_motor_on_Stop();
+//	/************************************************************************************************
+//	 *                                          Application
+//	 ************************************************************************************************/
+//	while (1)
+//	{
+//		/************************************************************************************************
+//		 *                               ON/OFF Button Handling Bouncing
+//		 ************************************************************************************************/
+//		if(  BIT_IS_CLEAR(ON_OFF_BUTTON_PIN_REG , ON_OFF_BUTTON_INPUT_PIN)  )
+//		{
+//			/*
+//			 * wait some seconds due to bouncing of the button
+//			 */
+//			_delay_ms(240);
+//			/*
+//			 * Ask again to make sure it is a real push on the button
+//			 */
+//			if(  BIT_IS_CLEAR(ON_OFF_BUTTON_PIN_REG , ON_OFF_BUTTON_INPUT_PIN)  )
+//			{
+//				/*
+//				 * Ask about the SW flag of ON/OFF button to make sure it will do
+//				 *the functionality one time only
+//				 */
+//				if(OnOFF_swFlag == FALSE_STATE)
+//				{
+//					/*
+//					 * to display 0 at when opening it first time at the click
+//					 */
+//					SEGMENTS_CTRL_PORT_REG |= 0X03;
+//					SEGMENTS_PORT_REG &=  0XF0;
+//					_delay_ms(1200);
+//					/*
+//					 * Change the state of the ON/OFF button to prevent the program
+//					 * to enter this area of condition to avoid multiple of this action
+//					 * during continuous press
+//					 */
+//					OnOFF_swFlag = TRUE_STATE;
+//					/*
+//					 * increment the variable which responsible for checking
+//					 * if this current press on the on/off button express on mode or off mode
+//					 */
+//					OnOff_ModeCheck++;
+//				}
+//			}
+//		}
+//		else
+//		{
+//			/*
+//			 * Change the state of the ON/OFF button to enable the program
+//			 * to enter the area of condition once again after releasing the button
+//			 */
+//			OnOFF_swFlag = FALSE_STATE;
+//		}
+//		/************************************************************************************************
+//		 *                          UP Button Handling Bouncing in ON mode
+//		 ************************************************************************************************/
+//		if(  (BIT_IS_CLEAR( UP_BUTTON_PIN_REG, UP_BUTTON_INPUT_PIN)) && ((OnOff_ModeCheck%2) == ON_STATE)  )
+//		{
+//			/*
+//			 * wait some seconds due to bouncing of the button
+//			 */
+//			_delay_ms(240);
+//			/*
+//			 * Ask again to make sure it is a real push on the button
+//			 */
+//			if(  (BIT_IS_CLEAR(UP_BUTTON_PIN_REG, UP_BUTTON_INPUT_PIN)) && ((OnOff_ModeCheck%2) == ON_STATE)  )
+//			{
+//				/*
+//				 * Ask about the SW flag of UP button to make sure it will do
+//				 *the functionality one time only
+//				 */
+//				if(Up_swFlag == FALSE_STATE)
+//				{
+//					upClick = 1;
+//					/*
+//					 * Change the state of the UP button to prevent the program
+//					 * to enter this area of condition to avoid multiple of this action
+//					 * during continuous press
+//					 */
+//					Up_swFlag = TRUE_STATE;
+//
+//					INT0_Init();
+//				}
+//			}
+//		}
+//		else
+//		{
+//			/*
+//			 * Change the state of the Up button to enable the program
+//			 * to enter the area of condition once again after releasing the button
+//			 */
+//			Up_swFlag = FALSE_STATE;
+//
+//			if(upClick != 0)
+//			{
+//				Timer_setCallBack(Exit_up_down_mode, Timer1);
+//				Timer_init(&time);
+//			}
+//		}
+//		/************************************************************************************************
+//		 *                          Down Button Handling Bouncing in ON mode
+//		 ************************************************************************************************/
+//		if(  (BIT_IS_CLEAR( DOWN_BUTTON_PIN_REG , DOWN_BUTTON_INPUT_PIN)) && ((OnOff_ModeCheck%2) == ON_STATE)  )
+//		{
+//			/*
+//			 * wait some seconds due to bouncing of the button
+//			 */
+//			_delay_ms(240);
+//			/*
+//			 * Ask again to make sure it is a real push on the button
+//			 */
+//			if(  (BIT_IS_CLEAR( DOWN_BUTTON_PIN_REG , DOWN_BUTTON_INPUT_PIN)) && ((OnOff_ModeCheck%2) == ON_STATE)  )
+//			{
+//				/*
+//				 * Ask about the SW flag of UP button to make sure it will do
+//				 *the functionality one time only
+//				 */
+//				if(Down_swFlag == FALSE_STATE)
+//				{
+//					downClick = 1;
+//					/*
+//					 * Change the state of the UP button to prevent the program
+//					 * to enter this area of condition to avoid multiple of this action
+//					 * during continuous press
+//					 */
+//					Down_swFlag = TRUE_STATE;
+//
+//					INT1_Init();
+//				}
+//			}
+//		}
+//		else
+//		{
+//			/*
+//			 * Change the state of the Down button to enable the program
+//			 * to enter the area of condition once again after releasing the button
+//			 */
+//			Down_swFlag = FALSE_STATE;
+//
+//			if(downClick != 0)
+//			{
+//				Timer_setCallBack(Exit_up_down_mode, Timer1);
+//				Timer_init(&time);
+//			}
+//		}
+//		/************************************************************************************************
+//		 *                             ON/OFF Button Handling ON mode & OFF mode
+//		 ************************************************************************************************/
+//		if( (OnOff_ModeCheck%2) == ON_STATE)
+//		{
+//			//ReadLastValue();
+//			//displayTemperature(tempStored);
+//			//disableSegments();
+//			//_delay_ms(500);
+//			//displayTemperature(tempStored);
+//			//EEPROM_readByte(0X0100, &tempZeros);
+//			//EEPROM_readByte(0X0101, &tempTens);
+//			//tempStored = (tempTens*10) + tempZeros;
+//
+//			/************************************************************************************************
+//			 *                              Temperature Setting in UP-Mode
+//			 ************************************************************************************************/
+//			if(upClick != 0)
+//			{
+//				if(g_tick != 5)
+//				{
+//					displayTemperature(temp);
+//					disableSegments();
+//					_delay_ms(500);
+//					displayTemperature(temp);
+//
+//
+//					/*if( (temperature - temp) == 5)
+//					{
+//						motor_on_ClockWise();
+//					}*/
+//				}
+//				else
+//				{
+//					g_tick = 0;
+//					upClick =0;
+//					Timer_DeInit(Timer1);
+//				}
+//			}
+//			////////////////////////////////////////////////////////////
+//			else if(downClick != 0)
+//			{
+//				if(g_tick != 5)
+//				{
+//					displayTemperature(temp);
+//					disableSegments();
+//					_delay_ms(500);
+//					displayTemperature(temp);
+//
+//
+//					/*if( (temperature - temp) == 5)
+//					{
+//						motor_on_ClockWise();
+//					}*/
+//				}
+//				else
+//				{
+//					g_tick = 0;
+//					downClick =0;
+//					Timer_DeInit(Timer1);
+//				}
+//			}
+//			/////////////////////////////////////////////////////////////
+//			else
+//			{
+//				/*Store the final value of temp*/
+//				//EEPROM_writeByte(0x0100, temp%10);
+//				//EEPROM_writeByte(0x0101, temp/10);
+//
+//				/*
+//				 * read current temperature of the water in the water heater
+//				 */
+//				currentTemperature = read_currentTemperature();
+//				/*
+//				 * display the temperature of the water heater on the segments
+//				 */
+//				SEGMENTS_CTRL_PORT_REG |= 0X03;
+//				displayTemperature(currentTemperature);
+//				SEGMENTS_CTRL_PORT_REG |= 0X03;
+//
+//
+//				//////////////////////////////////////////////
+//				//heating & cooling elements
+//				if( (currentTemperature - temp) == 5)
+//				{
+//					DC_motor_on_ClockWise();
+//					PORTD |= (1<<5);
+//				}
+//
+//				else if( (temp-currentTemperature) == 5)
+//				{
+//
+//					DC_motor_on_Stop();
+//					PORTD &= ~(1<<5);
+//
+//					//turn on heating
+//					PORTD |= (1<<6);
+//					//PORTA |= (1<<PA3) |(1<<PA4);
+//				}
+//				else
+//				{
+//					DC_motor_on_Stop();
+//					PORTD &= ~(1<<5);
+//					PORTD &= ~(1<<6);
+//				}
+//			}
+//			///////////////////////////////////////////////////
+//		}/*End of ON state*/
+//		else if( (OnOff_ModeCheck%2) == OFF_STATE )
+//		{
+//			/*
+//			 * turn off the segments during the off state
+//			 */
+//			Timer_DeInit(Timer1);
+//			downClick=0;
+//			upClick = 0;
+//			g_tick = 0;
+//			disableSegments();
+//
+//			//EEPROM_readByte(0X0100, &tempZeros);
+//			//EEPROM_readByte(0X0101, &tempTens);
+//			//tempStored = (tempTens*10) + tempZeros;
+//			//if(tempStored == 70)
+//			//{
+//			//PORTD |= (1<<5);
+//			//PORTD |= (1<<6);
+//			//}
+//
+//		}/*End of off State*/
+//
+//	}/*End of super loop*/
+//}/*End of main function*/

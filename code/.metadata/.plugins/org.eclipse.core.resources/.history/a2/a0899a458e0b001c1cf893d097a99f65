@@ -1,0 +1,250 @@
+/**********************************************************************************
+ * [FILE NAME]: application_functions.c
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]: Functions will be used in the Applications in control ECU.
+ *
+ ***********************************************************************************/
+
+#include"application_functions.h"
+
+
+
+/***********************************************************************************
+ *                             Application_Functions
+ ***********************************************************************************/
+
+/**********************************************************************************
+ * [Function Name]: read_currentTemperature
+ *
+ * [Description]:  function to read the current temperature from ADC channel
+ *
+ * [Args]:         NONE
+ *
+ * [In]:           NONE
+ *
+ * [Out]:          uint32 temp
+ *
+ * [Returns]:      the value of the current temperature which is read from
+ *                 temperature sensor
+ **********************************************************************************/
+uint32 read_currentTemperature(void)
+{
+	uint32 temp;
+
+	/*
+	 * Read channel two where the temperature sensor is connect
+	 * the current value of the water temperature
+	 */
+	temp = ADC_readChannel(CHANNEL_NUMBER);
+	/*
+	 * Calculate the temperature from the ADC value
+	 */
+	temp = (uint32)((temp*150*5)/(1023*1.5));
+
+	return temp;
+
+}/*end of read temperature function*/
+/**********************************************************************************
+ * [Function Name]:     displayTemperature
+ *
+ * [Description]:      function to display the passed temperature to the
+ *                     function on the 7-Segments
+ *
+ * [Args]:              uint32 currentTemp
+ *
+ * [In]:                currentTemp: to carry the value of the temperature
+ *                                   which  wanted to display on 7-Segment
+ *
+ * [Out]:                NONE
+ *
+ * [Returns]:            NONE
+ **********************************************************************************/
+void displayTemperature(uint32 currentTemp)
+{
+	/*
+	 * Enable Control selection lines of the segments
+	 */
+	SEGMENTS_CTRL_PORT_REG = (SEGMENTS_CTRL_PORT_REG & SEGMENTS_CTRL_MASK) | FIRST_SEGMENT_ENABLE_CTRL;
+	SEGMENTS_PORT_REG =   (SEGMENTS_PORT_REG & SEGMENTS_MASK) | (((uint32)(currentTemp))%10);
+	_delay_ms(SEGMENTS_CTRL_TIME);
+
+	SEGMENTS_CTRL_PORT_REG = (SEGMENTS_CTRL_PORT_REG & SEGMENTS_CTRL_MASK) | SECOND_SEGMENT_ENABLE_CTRL;
+	SEGMENTS_PORT_REG =   (SEGMENTS_PORT_REG & SEGMENTS_MASK) | (((uint32)(currentTemp))/10);
+	_delay_ms(SEGMENTS_CTRL_TIME);
+
+}/*End of display temperature function*/
+
+/**********************************************************************************
+ * [Function Name]:  disableSegments
+ *
+ * [Description]:    function to disable the 7-segments and turn it off
+ *
+ * [Args]:       NONE
+ *
+ * [In]:         NONE
+ *
+ * [Out]:        NONE
+ *
+ * [Returns]:    NONE
+ **********************************************************************************/
+void disableSegments(void)
+{
+	SEGMENTS_CTRL_PORT_REG = SEGMENTS_CTRL_PORT_REG & SEGMENTS_CTRL_MASK;
+}
+/**********************************************************************************
+ * [Function Name]:   FlashingSegments
+ *
+ * [Description]:    function to flash the value on the 7-segments
+ *
+ * [Args]:           uint32 temperature
+ *
+ * [In]:             temperature: to carry the value of the temperature
+ *                                which  wanted to flash on 7-Segment
+ *
+ * [Out]:            NONE
+ *
+ * [Returns]:        NONE
+ **********************************************************************************/
+void FlashingSegments(uint32 temperature)
+{
+	displayTemperature(temperature);
+	disableSegments();
+	_delay_ms(500);
+	displayTemperature(temperature);
+}
+/**********************************************************************************
+ * [Function Name]:
+ *
+ * [Description]:
+ *
+ * [Args]:
+ *
+ * [In]
+ *
+ * [Out]
+ *
+ * [Returns]:
+ **********************************************************************************/
+void upFunc(void)
+{
+
+	g_upInterrupt_SWflag= 1;
+
+
+
+	/*
+	 * return g_tick to its initial value be ready to
+	 * count another MAXIMUM_NUMBER_OF_SECONDS to start seconds
+	 * of displaying set temperature from initial value
+	 */
+	g_tick = INITIAL_VALUE;
+
+	if(g_firstClick == 0)
+	{
+		g_firstClick = 1;
+	}
+	else
+	{
+
+		g_setTemprature = g_setTemprature + INCREASE_VALUE;
+
+		if(g_setTemprature > MAXIMUM_SET_TEMPERATURE)
+		{
+			g_setTemprature = INITIAL_SET_TEMPERATURE;
+		}
+
+	}
+
+}
+/**********************************************************************************
+ * [Function Name]:
+ *
+ * [Description]:
+ *
+ * [Args]:
+ *
+ * [In]
+ *
+ * [Out]
+ *
+ * [Returns]:
+ **********************************************************************************/
+void downFunc(void)
+{
+	g_downInterrupt_SWflag = 1;
+
+	/*
+	 * return g_tick to its initial value be ready to
+	 * count another MAXIMUM_NUMBER_OF_SECONDS
+	 */
+	g_tick = INITIAL_VALUE;
+
+	if(g_firstClick == 0)
+	{
+
+		g_firstClick = 1;
+
+	}
+	else
+	{
+
+		g_setTemprature = g_setTemprature - DECREASE_VALUE;
+
+		if(g_setTemprature < MINIMUM_SET_TEMPERATURE)
+		{
+			g_setTemprature = INITIAL_SET_TEMPERATURE;
+		}
+
+
+	}
+
+
+}
+/**********************************************************************************
+ * [Function Name]:
+ *
+ * [Description]:
+ *
+ * [Args]:
+ *
+ * [In]
+ *
+ * [Out]
+ *
+ * [Returns]:
+ **********************************************************************************/
+
+void flashingTime(void)
+{
+
+	g_tick++;
+
+}
+
+/**********************************************************************************
+ * [Function Name]:
+ *
+ * [Description]:
+ *
+ * [Args]:
+ *
+ * [In]
+ *
+ * [Out]
+ *
+ * [Returns]:
+ **********************************************************************************/
+void store_inMemory(uint32 temperature)
+{
+
+	EEPROM_writeByte(FIRST_ADDRESS_TO_STORE, temperature%10);
+	_delay_ms(EEPROM_WRITE_DELAY_VALUE);
+	EEPROM_writeByte(SECOND_ADDRESS_TO_STORE, temperature/10);
+	_delay_ms(EEPROM_WRITE_DELAY_VALUE);
+
+}
+

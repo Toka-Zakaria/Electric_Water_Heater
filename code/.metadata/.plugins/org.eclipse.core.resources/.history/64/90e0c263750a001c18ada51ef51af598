@@ -1,0 +1,29 @@
+/**********************************************************************************
+ * [FILE NAME]: LEDs.c
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]:
+ ***********************************************************************************/
+
+
+
+#include"LEDS.h"
+
+void Leds_Init(const LEDs_TypeConfig * config_ptr)
+{
+
+
+	switch((config_ptr->logic))
+	{
+
+	case positive:
+
+		LED_DIRECTION_PORT = SET_BIT(LED_DIRECTION_PORT, LED_OUTPUT_PIN);
+		break;
+
+	}/*end of switch case*/
+
+}/*end of Leds_Init function*/

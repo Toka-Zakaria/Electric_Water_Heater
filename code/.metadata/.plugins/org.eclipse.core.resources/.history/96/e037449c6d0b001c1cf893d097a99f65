@@ -1,0 +1,452 @@
+/**********************************************************************************
+ * [FILE NAME]: main.c
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]:
+ ***********************************************************************************/
+
+#include"application_functions.h"
+
+/*
+ * Variable to use it to store the value of the temperature
+ * in the setting temperature mode, global to be able to
+ *  use it in interrupt functions in another file
+ */
+uint32 g_setTemprature= INITIAL_SET_TEMPERATURE;
+
+/*
+ * Variable to use in timer interrupt function
+ * it that every increment act as on second, global to be
+ *  able to use it in interrupt functions in another file
+ */
+uint8 g_tick = INITIAL_VALUE;
+/*
+ * Variable to check if it is the first time to
+ * press on down or up buttons or notglobal to be
+ *  able to use it in interrupt functions in another file
+ */
+bool g_firstClick = FALSE;
+/*
+ * Variable to check if the set callback function of
+ * UP button interrupt called or not, global to be
+ *  able to use it in interrupt functions in another file
+ */
+bool g_upInterrupt_SWflag = FALSE;
+/*
+ * Variable to check if the set callback function of
+ * down button interrupt called or not, global to be
+ *  able to use it in interrupt functions in another file
+ */
+bool g_downInterrupt_SWflag= FALSE;
+
+int main()
+{
+	/*******************************************************************************
+	 *                    Variable Declaration and Definitions                     *
+	 *******************************************************************************/
+	/*
+	 * local variable to check if the current press is On or off
+	 */
+	uint8 OnOff_ModeCheck = OFF_STATE;
+	/*
+	 * local variable to use it with on/off button to make sure that the
+	 * functionality is done one time while pressing the button
+	 */
+	uint8 OnOFF_swFlag = FALSE_STATE;
+	/*
+	 * Variable to carry the value of zeros of the
+	 * stored temperature after reading it from EEPROM
+	 */
+	uint8 temperatureZero = INITIAL_VALUE;
+	/*
+	 * Variable to carry the value of tens of the
+	 * stored temperature after reading it from EEPROM
+	 */
+	uint8 temperatureTens = INITIAL_VALUE;
+	/*
+	 * Variable to carry the value of the
+	 * stored temperature after reading it from EEPROM and after
+	 * calculates it from temperatureZero and temperatureTens
+	 */
+	uint32 storedTemperature = INITIAL_VALUE;
+	/*
+	 * Variable to use it to manage displaying the
+	 * stored temperature to be one time only
+	 * in the first of ON State
+	 */
+	bool eepromFlag = FALSE;
+	/*
+	 * Variable to carry the current temperature which
+	 * be read from Temperature sensor
+	 */
+	uint32 current_temperature = INITIAL_VALUE;
+
+	/*
+	 * Define a structure to configure the timer module to be
+	 * able to count
+	 */
+	Timer_ConfigType time = {0, 8000, Timer1, F_CPU_1024, Compare, Disconnected, ChannelA};
+	/*
+	 * Configure the Callback function of timer to do
+	 * a specific functionality every interrupt occurrence
+	 */
+	Timer_setCallBack(flashingTime, Timer1);
+
+	External_Interrupt_ConfigType up = {INTERRUPT0, Falling};
+
+	External_Interrupt_ConfigType down = {INTERRUPT1, Falling};
+	/*
+	 * Configure the Callback function of interrupt 0 to do
+	 * a specific functionality every interrupt occurrence
+	 */
+	Interrupt_setCallBack(upFunc, INTERRUPT0);
+	/*
+	 * Configure the Callback function of interrupt 1 to do
+	 * a specific functionality every interrupt occurrence
+	 */
+	Interrupt_setCallBack(downFunc, INTERRUPT1);
+	/*******************************************************************************
+	 *                             Modules Initialization                          *
+	 *******************************************************************************/
+	/*
+	 * Configure up button pin as input pin
+	 */
+	UP_BUTTON_DIRECTION_REG = CLEAR_BIT(UP_BUTTON_DIRECTION_REG, UP_BUTTON_INPUT_PIN);
+	/*
+	 * Configure down button as input pin
+	 */
+	DOWN_BUTTON_DIRECTION_REG = CLEAR_BIT(DOWN_BUTTON_DIRECTION_REG, DOWN_BUTTON_INPUT_PIN);
+	/*
+	 *Configure ON OFF button as input pin
+	 */
+	ON_OFF_BUTTON_DIRECTION_REG = CLEAR_BIT(ON_OFF_BUTTON_DIRECTION_REG, ON_OFF_BUTTON_INPUT_PIN);
+	/*
+	 * Enable PULL Up for UP Button
+	 */
+	UP_BUTTON_PORT_REG = SET_BIT(UP_BUTTON_PORT_REG, UP_BUTTON_INPUT_PIN);
+	/*
+	 * Enable PULL Up for Down Button
+	 */
+	DOWN_BUTTON_PORT_REG = SET_BIT(DOWN_BUTTON_PORT_REG, DOWN_BUTTON_INPUT_PIN);
+	/*
+	 * Enable PULL Up for ON/OFF Button
+	 */
+	ON_OFF_BUTTON_PORT_REG = SET_BIT(ON_OFF_BUTTON_PORT_REG, ON_OFF_BUTTON_INPUT_PIN);
+	/*
+	 *Configure 7-segments pins as output pins
+	 */
+	SEGMENTS_DIRECTION_REG |=  SEGMENTS_MASK_TO_BE_OUTPUT;
+	/*
+	 * Configure Control selection lines of the segments as output pins
+	 */
+	SEGMENTS_CTRL_DIRECTION_REG |= SGMENTS_CTRL_MASK_TO_BE_OUTPUT;
+	/*
+	 * Disable Control selection lines of the segments at the beginning of the program to make segments off
+	 */
+	SEGMENTS_CTRL_PORT_REG &= SEGMENTS_CTRL_MASK;
+	/*
+	 * Set the first value on the segments by 0
+	 */
+	SEGMENTS_PORT_REG &=  SEGMENTS_MASK;
+	/*
+	 * Configure the pin of the temperature sensor  as input pin
+	 */
+	TEMP_SENSOR_DIRECTION_REG = SET_BIT(TEMP_SENSOR_DIRECTION_REG, TEMP_SENSOR_INPUT_PIN);
+
+	/**************************************************************************************/
+	/*
+	 * Initialize the External EEPROM to be ready to work
+	 */
+	EEPROM_init();
+	/*
+	 * Initialize Analog to Digital Converter to be ready to work
+	 */
+	ADC_init();
+	/*
+	 * Initialize DC motor to be ready to work
+	 */
+	DC_motor_Init();
+	/*
+	 * Initialize LEDs to be ready to work
+	 */
+	LED_Init();
+	/*
+	 * Initialize Interrupt 0 to be ready to work
+	 */
+	External_Interrupt_init(&up);
+	/*
+	 * Initialize Interrupt 1 to be ready to work
+	 */
+	External_Interrupt_init(&down);
+	/*
+	 * Initialize timer 1 to be ready to work
+	 */
+	Timer_init(&time);
+	/*
+	 * Stop the clock of the timer
+	 */
+	Timer_stop(Timer1);
+	/*
+	 * Enable Global Interrupt
+	 */
+	SREG = SET_BIT(SREG, I_BIT);
+
+	/*******************************************************************************
+	 *                             Initial Start mode                               *
+	 *******************************************************************************/
+	/*
+	 * stop the motor in the start of the program
+	 */
+	DC_motor_on_Stop();
+	/*
+	 * Turn OFF cooling LED in the begin of the program
+	 */
+	LED_OFF(LED1);
+	/*
+	 * Turn OFF heating LED in the begin of the program
+	 */
+	LED_OFF(LED2);
+	/*******************************************************************************
+	 *                             Main Application                                *
+	 *******************************************************************************/
+	while(1)
+	{
+		/*
+		 * receive current temperature of water from temperature sensor
+		 */
+		current_temperature = read_currentTemperature();
+
+		/**************************************************************************
+		 *                              ON/OFF Button
+		 **************************************************************************/
+		if(  BIT_IS_CLEAR(ON_OFF_BUTTON_PIN_REG , ON_OFF_BUTTON_INPUT_PIN)  )
+		{
+			/*
+			 * wait some seconds due to bouncing of the button
+			 */
+			_delay_ms(240);
+			/*
+			 * Ask again to make sure it is a real push on the button
+			 */
+			if(  BIT_IS_CLEAR(ON_OFF_BUTTON_PIN_REG , ON_OFF_BUTTON_INPUT_PIN)  )
+			{
+				/*
+				 * Ask about the SW flag of ON/OFF button to make sure it will do
+				 *the functionality one time only
+				 */
+				if(OnOFF_swFlag == FALSE_STATE)
+				{
+					/*
+					 * Change the state of the ON/OFF button to prevent the program
+					 * to enter this area of condition to avoid multiple of this action
+					 * during continuous press
+					 */
+					OnOFF_swFlag = TRUE_STATE;
+					/*
+					 * increment the variable which responsible for checking
+					 * if this current press on the on/off button express on mode or off mode
+					 */
+					OnOff_ModeCheck++;
+				}
+			}
+		}
+		else
+		{
+			/*
+			 * Change the state of the ON/OFF button to enable the program
+			 * to enter the area of condition once again after releasing the button
+			 */
+			OnOFF_swFlag = FALSE_STATE;
+		}
+
+		/**************************************************************************
+		 *                              (1) ON  STATE
+		 **************************************************************************/
+		if( (OnOff_ModeCheck%2) == ON_STATE)
+		{
+			/*
+			 * read the first digit of the temperature from
+			 * the external memory and store it in a variable
+			 */
+			EEPROM_readByte(FIRST_ADDRESS_TO_STORE, &temperatureZero);
+			/*
+			 * wait some seconds to give the memory time to read
+			 */
+			_delay_ms(EEPROM_READ_DELAY_VALUE);
+			/*
+			 * read the second digit of the temperature from
+			 * the external memory and store it in a variable
+			 */
+			EEPROM_readByte(SECOND_ADDRESS_TO_STORE, &temperatureTens);
+			/*
+			 * wait some seconds to give the memory time to read
+			 */
+			_delay_ms(EEPROM_READ_DELAY_VALUE);
+			/*
+			 * Calculate the Stored temperature after getting
+			 * the first and second digit from external memory
+			 */
+			storedTemperature = (temperatureTens*10) + temperatureZero;
+
+			/**************************************************************************
+			 *                 (1-1) HEATING-COOLING ELEMENT CHECK
+			 **************************************************************************/
+			if( (current_temperature ) > (storedTemperature + DIFFERANCE_VALUE) ) /*Condition of Turn on Cooling Element*/
+			{
+				/*
+				 * Turn on the motor to work on Clock wise direction
+				 * to act as Fan for cooling
+				 */
+				DC_motor_on_ClockWise();
+				/*
+				 * Turn on the Cooling Led
+				 */
+				LED_ON(LED1);
+				LED_OFF(LED2); //heating led
+
+			}
+			else if( (current_temperature ) < (storedTemperature + DIFFERANCE_VALUE) )
+			{
+				LED_ON(LED2); //heating led
+				LED_OFF(LED1); //cooling led
+
+				DC_motor_on_Stop();
+			}
+			else
+			{
+				DC_motor_on_Stop();
+
+				LED_OFF(LED1); //cooling led
+				LED_OFF(LED2); //heating led
+
+
+			}
+
+
+			if(eepromFlag == 1)
+			{
+
+				Timer_resume(Timer1, F_CPU_1024);
+				if(g_tick < 5)
+				{
+					displayTemperature(storedTemperature);
+					disableSegments();
+					_delay_ms(500);
+					displayTemperature(storedTemperature);
+				}
+				else
+				{
+					Timer_stop(Timer1);
+					g_tick =0;
+
+					eepromFlag =0;
+				}
+
+
+			}
+			else if(g_upInterrupt_SWflag == 1)
+			{
+
+				Timer_resume(Timer1, F_CPU_1024);
+
+				if(g_tick < 5)
+				{
+					displayTemperature(g_setTemprature);
+					disableSegments();
+					_delay_ms(500);
+					displayTemperature(g_setTemprature);
+				}
+				else
+				{
+					Timer_stop(Timer1);
+					g_tick =0;
+					g_upInterrupt_SWflag = 0;
+
+
+					EEPROM_writeByte(0x0100, g_setTemprature%10);
+					_delay_ms(80);
+					EEPROM_writeByte(0x0101, g_setTemprature/10);
+					_delay_ms(80);
+				}
+
+			}
+			else if(g_downInterrupt_SWflag == 1)
+			{
+
+				Timer_resume(Timer1, F_CPU_1024);
+				if(g_tick < 5)
+				{
+					displayTemperature(g_setTemprature);
+					disableSegments();
+					_delay_ms(500);
+					displayTemperature(g_setTemprature);
+				}
+				else
+				{
+					Timer_stop(Timer1);
+					g_tick =0;
+					g_downInterrupt_SWflag = 0;
+
+
+					EEPROM_writeByte(0x0100, g_setTemprature%10);
+					_delay_ms(80);
+					EEPROM_writeByte(0x0101, g_setTemprature/10);
+					_delay_ms(80);
+				}
+
+			}
+			else
+			{
+				/*
+				 * display current temperature of the sensor on 7-segments
+				 */
+				displayTemperature(current_temperature);
+
+			}
+
+
+
+		}/*End of ON_OFF button in ON state*/
+		else if((OnOff_ModeCheck%2) == OFF_STATE )
+		{
+
+			disableSegments();
+
+			DC_motor_on_Stop();
+
+			LED_OFF(LED1); //cooling led
+			LED_OFF(LED2); //heating led
+
+			/*
+			 * to prevent interrupt from occurrence in the off state
+			 */
+			g_upInterrupt_SWflag = 0;
+			g_downInterrupt_SWflag = 0;
+
+			/*
+			 * turn off the 7-segment as we are in the off state
+			 */
+
+
+			/*
+			 *  store in temp in eeprom
+			 */
+			//			EEPROM_writeByte(0x0100, temp%10);
+			//			_delay_ms(80);
+			//			EEPROM_writeByte(0x0101, temp/10);
+			//			_delay_ms(80);
+
+			eepromFlag= 1;
+		}/*End of ON_OFF button off state*/
+
+
+
+
+
+	}/*End of super loop*/
+
+	return 0;
+}/*end of main function*/

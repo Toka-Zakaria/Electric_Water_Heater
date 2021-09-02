@@ -1,0 +1,56 @@
+/**********************************************************************************
+ * [FILE NAME]: LEDs.c
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]:
+ ***********************************************************************************/
+
+
+
+#include"LEDS.h"
+
+void Led_Init(void)
+{
+
+
+	switch (NUMBER_OF_LEDS)
+	{
+
+	case 1:
+
+		/*
+		 * Configure the led pin as output pin
+		 */
+		LED1_DIRECTION_PORT = SET_BIT(LED1_DIRECTION_PORT, LED1_OUTPUT_PIN);
+		break;
+
+	case 2:
+		break;
+	case 3:
+		break;
+
+	}/*end of switch case*/
+
+
+
+
+}/*end of Led_Init*/
+
+
+void LED_ON(void)
+{
+
+#if    LED_LOGIC == POSITIVE
+
+	/*
+	 *
+	 */
+
+#else
+
+#endif
+
+}/*end of LED_ON function*/

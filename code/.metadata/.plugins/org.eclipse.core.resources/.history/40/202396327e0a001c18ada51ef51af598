@@ -1,0 +1,73 @@
+/**********************************************************************************
+ * [FILE NAME]: LEDs.c
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]:
+ ***********************************************************************************/
+
+
+
+#include"LEDS.h"
+
+void Led_Init(void)
+{
+
+
+#if NUMBER_OF_LEDS == 1
+
+	/*configure the led as output pin*/
+	LED1_DIRECTION_PORT = SET_BIT(LED1_DIRECTION_PORT, LED1_OUTPUT_PIN);
+
+
+#elif NUMBER_OF_LEDS == 2
+
+	/*configure the led as output pin*/
+	LED1_DIRECTION_PORT = SET_BIT(LED1_DIRECTION_PORT, LED1_OUTPUT_PIN);
+	/*configure the led as output pin*/
+	LED2_DIRECTION_PORT = SET_BIT(LED2_DIRECTION_PORT, LED2_OUTPUT_PIN);
+
+
+#elif NUMBER_OF_LEDS == 3
+
+	/*configure the led as output pin*/
+	LED1_DIRECTION_PORT = SET_BIT(LED1_DIRECTION_PORT, LED1_OUTPUT_PIN);
+	/*configure the led as output pin*/
+	LED2_DIRECTION_PORT = SET_BIT(LED2_DIRECTION_PORT, LED2_OUTPUT_PIN);
+	/*configure the led as output pin*/
+	LED3_DIRECTION_PORT = SET_BIT(LED3_DIRECTION_PORT, LED3_OUTPUT_PIN);
+
+#endif
+
+
+}/*end of Led_Init*/
+
+
+void LED_ON(uint8 ledNumber)
+{
+
+switch (ledNumber)
+{
+case LED1:
+
+#if LED1_LOGIC == POSITIVE
+
+	LED1_DATA_PORT = SET_BIT(LED1_DATA_PORT, LED1_OUTPUT_PIN);
+#else
+	LED1_DATA_PORT = CLEAR_BIT(LED1_DATA_PORT, LED1_OUTPUT_PIN);
+
+#endif
+	break;
+
+case LED2:
+	break;
+
+case LED3:
+	break;
+}/*end of switch code*/
+
+
+
+}/*end of LED_ON function*/

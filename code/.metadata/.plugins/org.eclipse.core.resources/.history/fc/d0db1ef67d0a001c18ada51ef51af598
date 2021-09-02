@@ -1,0 +1,86 @@
+/**********************************************************************************
+ * [FILE NAME]: LEDs.c
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]:
+ ***********************************************************************************/
+
+#ifndef LEDS_H_
+#define LEDS_H_
+
+#include "std_types.h"
+#include "micro_config.h"
+#include "common_macros.h"
+
+#define NUMBER_OF_LEDS              2
+
+#define POSITIVE                    1
+#define NEGATIVE                    2
+
+
+#if NUMBER_OF_LEDS == 1
+
+
+#define LED1_DIRECTION_PORT         DDRA
+#define LED1_DATA_PORT              PORTA
+#define LED1_PIN_PORT               PINA
+#define LED1_OUTPUT_PIN              PA0
+
+#define LED1_LOGIC                POSITIVE
+
+
+#elif NUMBER_OF_LEDS == 2
+
+#define LED1_DIRECTION_PORT         DDRA
+#define LED1_DATA_PORT              PORTA
+#define LED1_PIN_PORT               PINA
+#define LED1_OUTPUT_PIN              PA0
+
+#define LED1_LOGIC                POSITIVE
+
+
+#define LED2_DIRECTION_PORT         DDRA
+#define LED2_DATA_PORT              PORTA
+#define LED2_PIN_PORT               PINA
+#define LED2_OUTPUT_PIN              PA0
+
+#define LED2_LOGIC                POSITIVE
+
+#elif  NUMBER_OF_LEDS == 3
+
+#define LED1_DIRECTION_PORT         DDRA
+#define LED1_DATA_PORT              PORTA
+#define LED1_PIN_PORT               PINA
+#define LED1_OUTPUT_PIN              PA0
+
+#define LED1_LOGIC                POSITIVE
+
+
+#define LED2_DIRECTION_PORT         DDRA
+#define LED2_DATA_PORT              PORTA
+#define LED2_PIN_PORT               PINA
+#define LED2_OUTPUT_PIN              PA0
+
+#define LED2_LOGIC                POSITIVE
+
+
+#define LED3_DIRECTION_PORT         DDRA
+#define LED3_DATA_PORT              PORTA
+#define LED3_PIN_PORT               PINA
+#define LED3_OUTPUT_PIN              PA0
+
+#define LED3_LOGIC                POSITIVE
+
+#endif
+
+
+
+
+
+
+
+
+#endif /* LEDS_H_ */

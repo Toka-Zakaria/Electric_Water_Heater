@@ -1,0 +1,17 @@
+/**********************************************************************************
+ * [FILE NAME]: main.c
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]:
+ ***********************************************************************************/
+
+#include"application_functions.h"
+
+int main()
+{
+
+	return 0;
+}/*end of main function*/

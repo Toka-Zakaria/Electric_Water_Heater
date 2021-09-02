@@ -1,0 +1,67 @@
+/**********************************************************************************
+ * [FILE NAME]: main.c
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]:
+ ***********************************************************************************/
+
+#include"application_functions.h"
+
+int main()
+{
+	/*******************************************************************************
+	 *                    Variable Declaration and Definitions                     *
+	 *******************************************************************************/
+
+	/*******************************************************************************
+	 *                             Modules Initialization                          *
+	 *******************************************************************************/
+	/*
+	 * Initialize the External EEPROM to be ready to work
+	 */
+	EEPROM_init();
+	/*
+	 * Initialize Analog to Digital Converter to be ready to work
+	 */
+	ADC_init();
+	/*
+	 * Initialize DC motor to be ready to work
+	 */
+	DC_motor_Init();
+	/*
+	 * Initialize LEDs to be ready to work
+	 */
+	LEDs_Init();
+	/*
+	 * Enable Interrupt
+	 */
+	SREG = SET_BIT(SREG, I_BIT);
+
+	/*******************************************************************************
+	 *                             Initial Start mode                               *
+	 *******************************************************************************/
+	/*
+	 * stop the motor in the start of the program
+	 */
+	DC_motor_on_stop();
+	/*
+	 * Turn OFF cooling LED in the begin of the program
+	 */
+	LED_OFF(LED1);
+	/*
+	 * Turn OFF heating LED in the begin of the program
+	 */
+	LED_OFF(LED2);
+	/*******************************************************************************
+	 *                             Main Application                                *
+	 *******************************************************************************/
+	while(1)
+	{
+
+	}/*End of super loop*/
+
+	return 0;
+}/*end of main function*/

@@ -1,0 +1,101 @@
+/**********************************************************************************
+ * [FILE NAME]: application_functions.h
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]:File of All types Declaration and Functions prototypes of control
+ *                ECU configuration.
+ ***********************************************************************************/
+
+#ifndef APPLICATION_FUNCTIONS_H_
+#define APPLICATION_FUNCTIONS_H_
+
+#include "std_types.h"
+#include "micro_config.h"
+#include "common_macros.h"
+#include"external_eeprom.h"
+#include"timers.h"
+#include"external_interrupts.h"
+#include"adc.h"
+#include"DCmotor.h"
+#include"LEDs.h"
+
+/*******************************************************************************
+ *                      Preprocessor Macros                                    *
+ *******************************************************************************/
+#define I_BIT                                               7
+#define FALSE_STATE                                         0
+#define TRUE_STATE                                          1
+#define ON_STATE                                            1
+#define OFF_STATE                                           0
+
+#define UP_BUTTON_PORT_REG                                PORTD
+#define UP_BUTTON_DIRECTION_REG                           DDRD
+#define UP_BUTTON_PIN_REG                                 PIND
+#define UP_BUTTON_INPUT_PIN                               PD2
+
+#define DOWN_BUTTON_PORT_REG                              PORTD
+#define DOWN_BUTTON_DIRECTION_REG                         DDRD
+#define DOWN_BUTTON_PIN_REG                               PIND
+#define DOWN_BUTTON_INPUT_PIN                             PD3
+
+#define ON_OFF_BUTTON_PORT_REG                            PORTD
+#define ON_OFF_BUTTON_DIRECTION_REG                       DDRD
+#define ON_OFF_BUTTON_PIN_REG                             PIND
+#define ON_OFF_BUTTON_INPUT_PIN                           PD4
+
+#define COOLING_LED_DIRECTION_REG                         DDRD
+#define COOLING_LED_PORT_REG                              PORTD
+#define COOLING_LED_PIN_REG                               PIND
+#define COOLING_LED_OUTPUT_PIN                            PD5
+
+#define HEATING_LED_DIRECTION_REG                         DDRD
+#define HEATING_LED_PORT_REG                              PORTD
+#define HEATING_LED_PIN_REG                               PIND
+#define HEATING_LED_OUTPUT_PIN                            PD6
+
+#define TEMP_SENSOR_DIRECTION_REG                         DDRA
+#define TEMP_SENSOR_PORT_REG                              PORTA
+#define TEMP_SENSOR_PIN_REG                               PINA
+#define TEMP_SENSOR_INPUT_PIN                             PA0
+
+#define SEGMENTS_DIRECTION_REG                            DDRB
+#define SEGMENTS_PORT_REG                                 PORTB
+#define SEGMENTS_PIN_REG                                  PINB
+
+#define SEGMENTS_CTRL_DIRECTION_REG                       DDRD
+#define SEGMENTS_CTRL_PORT_REG                            PORTD
+#define SEGMENTS_CTRL_PIN_REG                             PIND
+
+#define MINIMUM_SET_TEMPERATURE                           35
+#define MAXIMUM_SET_TEMPERATURE                           75
+
+#define SEGMENTS_MASK_TO_BE_OUTPUT                        0X0F
+#define SGMENTS_CTRL_MASK_TO_BE_OUTPUT                    0X03
+
+#define SEGMENTS_CTRL_MASK                                0XFC
+#define SEGMENTS_MASK                                     0XF0
+
+
+
+extern uint32 g_currentTemperature;
+
+extern uint8 g_Click;
+
+extern uint8 g_upInterrupt_SWflag;
+
+extern uint8 downFlag;
+
+extern uint8 g_tick;
+
+
+uint32 read_currentTemperature(void);
+void displayTemperature(uint32 currentTemp);
+void disableSegments(void);
+void upFunc(void);
+void downFunc(void);
+void flashingTime(void);
+
+#endif /* APPLICATION_FUNCTIONS_H_ */

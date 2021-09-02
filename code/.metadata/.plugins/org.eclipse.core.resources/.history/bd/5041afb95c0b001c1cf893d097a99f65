@@ -1,0 +1,441 @@
+/**********************************************************************************
+ * [FILE NAME]: main.c
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]:
+ ***********************************************************************************/
+
+#include"application_functions.h"
+
+uint32 temp= 60;
+
+uint8 g_Click = 0;
+
+uint8 upFlag=0;
+
+uint8 downFlag= 0;
+
+uint8 g_tick=0;
+
+void upFunc(void)
+{
+
+	upFlag= 1;
+
+	if(g_Click == 0)
+	{
+		//		displayTemperature(temp);
+		//		_delay_ms(240000);
+
+		g_Click = 1;
+
+	}
+	else
+	{
+
+		temp = temp+5;
+
+		if(temp > 75)
+		{
+			temp = 60;
+		}
+
+		//		displayTemperature(temp);
+		//		_delay_ms(240000);
+
+	}
+
+}
+
+void downFunc(void)
+{
+	downFlag = 1;
+
+	if(g_Click == 0)
+	{
+		//		displayTemperature(temp);
+		//		_delay_ms(240000);
+
+		g_Click = 1;
+
+	}
+	else
+	{
+
+		temp = temp-5;
+
+		if(temp < 35)
+		{
+			temp = 60;
+		}
+
+		//		displayTemperature(temp);
+		//		_delay_ms(240000);
+
+	}
+
+
+}
+
+
+void flashing(void)
+{
+
+	g_tick++;
+
+}
+
+int main()
+{
+	/*******************************************************************************
+	 *                    Variable Declaration and Definitions                     *
+	 *******************************************************************************/
+	/*
+	 * local variable to check if the current press is On or off
+	 */
+	uint8 OnOff_ModeCheck = OFF_STATE;
+	/*
+	 * local variable to use it with on/off button to make sure that the
+	 * functionality is done one time while pressing the button
+	 */
+	uint8 OnOFF_swFlag = FALSE_STATE;
+
+	//	/*
+	//	 * local variable to use it with Up button to make sure that the
+	//	 * functionality is done one time while pressing the button
+	//	 */
+	//	uint8 Up_swFlag = FALSE_STATE;
+	//	/*
+	//	 * local variable to use it with Down button to make sure that the
+	//	 * functionality is done one time while pressing the button
+	//	 */
+	//	uint8 Down_swFlag = FALSE_STATE;
+
+	uint8 tempZeros=0;
+	uint8 tempTens=0;
+	uint32 tempStored=0;
+
+	uint8 eepromFlag =0;
+
+	uint32 temperature=0;
+
+	Timer_ConfigType time = {0, 8000, Timer1, F_CPU_1024, Compare, Disconnected, ChannelA};
+
+	Timer_setCallBack(flashing, Timer1);
+
+	External_Interrupt_ConfigType up = {INTERRUPT0, Falling};
+
+	External_Interrupt_ConfigType down = {INTERRUPT1, Falling};
+
+	Interrupt_setCallBack(upFunc, INTERRUPT0);
+
+	Interrupt_setCallBack(downFunc, INTERRUPT1);
+
+	/*******************************************************************************
+	 *                             Modules Initialization                          *
+	 *******************************************************************************/
+	/*
+	 * Configure up button pin as input pin
+	 */
+	UP_BUTTON_DIRECTION_REG = CLEAR_BIT(UP_BUTTON_DIRECTION_REG, UP_BUTTON_INPUT_PIN);
+	/*
+	 * Configure down button as input pin
+	 */
+	DOWN_BUTTON_DIRECTION_REG = CLEAR_BIT(DOWN_BUTTON_DIRECTION_REG, DOWN_BUTTON_INPUT_PIN);
+	/*
+	 *Configure ON OFF button as input pin
+	 */
+	ON_OFF_BUTTON_DIRECTION_REG = CLEAR_BIT(ON_OFF_BUTTON_DIRECTION_REG, ON_OFF_BUTTON_INPUT_PIN);
+
+
+	/*
+	 * Enable PULL Up for UP Button
+	 */
+	UP_BUTTON_PORT_REG = SET_BIT(UP_BUTTON_PORT_REG, UP_BUTTON_INPUT_PIN);
+	/*
+	 * Enable PULL Up for Down Button
+	 */
+	DOWN_BUTTON_PORT_REG = SET_BIT(DOWN_BUTTON_PORT_REG, DOWN_BUTTON_INPUT_PIN);
+	/*
+	 * Enable PULL Up for ON/OFF Button
+	 */
+	ON_OFF_BUTTON_PORT_REG = SET_BIT(ON_OFF_BUTTON_PORT_REG, ON_OFF_BUTTON_INPUT_PIN);
+	/*
+	 *Configure 7-segments pins as output pins
+	 */
+	SEGMENTS_DIRECTION_REG |=  SEGMENTS_MASK_TO_BE_OUTPUT;
+	/*
+	 * Configure Control selection lines of the segments as output pins
+	 */
+	SEGMENTS_CTRL_DIRECTION_REG |= SGMENTS_CTRL_MASK_TO_BE_OUTPUT;
+	/*
+	 * Disable Control selection lines of the segments at the beginning of the program to make segments off
+	 */
+	SEGMENTS_CTRL_PORT_REG &= SEGMENTS_CTRL_MASK;
+	/*
+	 * Set the first value on the segments by 0
+	 */
+	SEGMENTS_PORT_REG &=  SEGMENTS_MASK;
+	/*
+	 * Configure the pin of the temperature sensor  as input pin
+	 */
+	TEMP_SENSOR_DIRECTION_REG = SET_BIT(TEMP_SENSOR_DIRECTION_REG, TEMP_SENSOR_INPUT_PIN);
+
+	/**************************************************************************************/
+	/*
+	 * Initialize the External EEPROM to be ready to work
+	 */
+	EEPROM_init();
+	/*
+	 * Initialize Analog to Digital Converter to be ready to work
+	 */
+	ADC_init();
+	/*
+	 * Initialize DC motor to be ready to work
+	 */
+	DC_motor_Init();
+	/*
+	 * Initialize LEDs to be ready to work
+	 */
+	LED_Init();
+
+	External_Interrupt_init(&up);
+
+	External_Interrupt_init(&down);
+
+	Timer_init(&time);
+
+	Timer_stop(Timer1);
+	/*
+	 * Enable Global Interrupt
+	 */
+	SREG = SET_BIT(SREG, I_BIT);
+
+	/*******************************************************************************
+	 *                             Initial Start mode                               *
+	 *******************************************************************************/
+	/*
+	 * stop the motor in the start of the program
+	 */
+	DC_motor_on_Stop();
+	/*
+	 * Turn OFF cooling LED in the begin of the program
+	 */
+	LED_OFF(LED1);
+	/*
+	 * Turn OFF heating LED in the begin of the program
+	 */
+	LED_OFF(LED2);
+	/*******************************************************************************
+	 *                             Main Application                                *
+	 *******************************************************************************/
+	while(1)
+	{
+
+		/*
+		 * receive current temperature of water from temperature sensor
+		 */
+		temperature = read_currentTemperature();
+
+
+
+
+		/************************************************************************************************
+		 *                                          ON/OFF Button
+		 ************************************************************************************************/
+		if(  BIT_IS_CLEAR(ON_OFF_BUTTON_PIN_REG , ON_OFF_BUTTON_INPUT_PIN)  )
+		{
+			/*
+			 * wait some seconds due to bouncing of the button
+			 */
+			_delay_ms(240);
+			/*
+			 * Ask again to make sure it is a real push on the button
+			 */
+			if(  BIT_IS_CLEAR(ON_OFF_BUTTON_PIN_REG , ON_OFF_BUTTON_INPUT_PIN)  )
+			{
+				/*
+				 * Ask about the SW flag of ON/OFF button to make sure it will do
+				 *the functionality one time only
+				 */
+				if(OnOFF_swFlag == FALSE_STATE)
+				{
+					/*
+					 * Change the state of the ON/OFF button to prevent the program
+					 * to enter this area of condition to avoid multiple of this action
+					 * during continuous press
+					 */
+					OnOFF_swFlag = TRUE_STATE;
+					/*
+					 * increment the variable which responsible for checking
+					 * if this current press on the on/off button express on mode or off mode
+					 */
+					OnOff_ModeCheck++;
+				}
+			}
+		}
+		else
+		{
+			/*
+			 * Change the state of the ON/OFF button to enable the program
+			 * to enter the area of condition once again after releasing the button
+			 */
+			OnOFF_swFlag = FALSE_STATE;
+		}
+
+		/***************************************************************************************************/
+		if( (OnOff_ModeCheck%2) == ON_STATE)
+		{
+
+			EEPROM_readByte(0X0100, &tempZeros);
+			_delay_ms(80);
+			EEPROM_readByte(0X0101, &tempTens);
+			_delay_ms(80);
+
+			tempStored = (tempTens*10) + tempZeros;
+
+
+			if( (temperature ) >= (temp+5) )
+			{
+				DC_motor_on_ClockWise();
+
+				LED_ON(LED1); //cooling led
+				LED_OFF(LED2); //heating led
+
+			}
+			else if( (temperature ) <= (temp+5) )
+			{
+				LED_ON(LED2); //heating led
+				LED_OFF(LED1); //cooling led
+
+				DC_motor_on_Stop();
+			}
+			else
+			{
+				DC_motor_on_Stop();
+
+				LED_OFF(LED1); //cooling led
+				LED_OFF(LED2); //heating led
+
+
+			}
+
+
+
+
+			if(eepromFlag == 1)
+			{
+
+				Timer_resume(Timer1, F_CPU_1024);
+				if(g_tick < 5)
+				{
+					displayTemperature(tempStored);
+					disableSegments();
+					_delay_ms(500);
+					displayTemperature(tempStored);
+				}
+				else
+				{
+					Timer_stop(Timer1);
+					g_tick =0;
+
+					EEPROM_writeByte(0x0100, temp%10);
+					_delay_ms(80);
+					EEPROM_writeByte(0x0101, temp/10);
+					_delay_ms(80);
+
+					eepromFlag =0;
+
+				}
+
+
+			}
+			else if(upFlag == 1)
+			{
+
+				Timer_resume(Timer1, F_CPU_1024);
+				if(g_tick < 5)
+				{
+					displayTemperature(temp);
+					disableSegments();
+					_delay_ms(500);
+					displayTemperature(temp);
+				}
+				else
+				{
+					Timer_stop(Timer1);
+					g_tick =0;
+					upFlag = 0;
+				}
+
+			}
+			else if(downFlag == 1)
+			{
+
+				Timer_resume(Timer1, F_CPU_1024);
+				if(g_tick < 5)
+				{
+					displayTemperature(temp);
+					disableSegments();
+					_delay_ms(500);
+					displayTemperature(temp);
+				}
+				else
+				{
+					Timer_stop(Timer1);
+					g_tick =0;
+					downFlag = 0;
+				}
+
+			}
+			else
+			{
+				/*
+				 * display current temperature of the sensor on 7-segments
+				 */
+				displayTemperature(temperature);
+
+			}
+
+
+
+		}/*End of ON_OFF button in ON state*/
+		else if((OnOff_ModeCheck%2) == OFF_STATE )
+		{
+
+			disableSegments();
+
+
+			/*
+			 * to prevent interrupt from occurrence in the off state
+			 */
+			upFlag = 0;
+			downFlag = 0;
+
+			/*
+			 * turn off the 7-segment as we are in the off state
+			 */
+
+
+			/*
+			 *  store in temp in eeprom
+			 */
+			//			EEPROM_writeByte(0x0100, temp%10);
+			//			_delay_ms(80);
+			//			EEPROM_writeByte(0x0101, temp/10);
+			//			_delay_ms(80);
+
+			eepromFlag= 1;
+		}/*End of ON_OFF button off state*/
+
+
+
+
+
+	}/*End of super loop*/
+
+	return 0;
+}/*end of main function*/

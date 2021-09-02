@@ -1,0 +1,30 @@
+/**********************************************************************************
+ * [FILE NAME]: LEDs.c
+ *
+ * [AUTHOR]: Toka Zakaria Mohamed Ramadan
+ *
+ * [DATE CREATED]: Jul 27, 2021
+ *
+ * [Description]:
+ ***********************************************************************************/
+
+#ifndef LEDS_H_
+#define LEDS_H_
+
+#include "std_types.h"
+#include "micro_config.h"
+#include "common_macros.h"
+
+#define LED_DIRECTION_PORT         DDRA
+#define LED_DATA_PORT              PORTA
+#define LED_PIN_PORT               PINA
+#define LED_OUTPUT_PIN              PA0
+
+
+#define
+
+
+
+
+
+#endif /* LEDS_H_ */
