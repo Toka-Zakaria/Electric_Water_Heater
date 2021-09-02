@@ -34,6 +34,7 @@
 #define OFF_STATE                                           0
 
 #define COMPARE_VALUE                                     7000
+#define NONE                                               0
 
 #define ON_OFF_BUTTON_PORT_REG                            PORTD
 #define ON_OFF_BUTTON_DIRECTION_REG                       DDRD
