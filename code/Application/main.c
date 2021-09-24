@@ -87,7 +87,7 @@ int main()
 	 * Define a structure to configure the timer module to be
 	 * able to count
 	 */
-	Timer_ConfigType time = {INITIAL_VALUE,NONE,COMPARE_VALUE, Timer1, F_CPU_1024, Compare, Disconnected, ChannelA};
+	Timer_ConfigType time = {INITIAL_VALUE,COMPARE_VALUE,NONE, Timer1, F_CPU_1024, Compare, Disconnected, ChannelA};
 	/*
 	 * Configure the Callback function of timer to do
 	 * a specific functionality every interrupt occurrence
